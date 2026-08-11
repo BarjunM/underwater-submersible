@@ -13,6 +13,17 @@ import * as THREE from 'three'
 
 export const EDGE = '#0a0d11'
 
+/**
+ * How hard the feature lines are drawn, per theme.
+ *
+ * On the negative the machine is white against near-black: its silhouette is
+ * carried by value alone and the linework only has to describe what is going
+ * on inside it. On the print the same white sits on warm cream, two values a
+ * hair apart, and nothing separates the two but the drawing — so the lines
+ * take over the job the background was doing and are struck much harder.
+ */
+export const EDGE_OPACITY = { dark: 0.55, light: 0.9 }
+
 export type Material = {
   color: string
   metal: number
@@ -24,6 +35,7 @@ export function Surface({
   material,
   edges = null,
   hot = false,
+  edgeOpacity = EDGE_OPACITY.dark,
 }: {
   geometry: THREE.BufferGeometry
   material: Material
@@ -36,6 +48,8 @@ export function Surface({
   edges?: THREE.BufferGeometry | null
   /** Under the pointer — lit from within in the accent. */
   hot?: boolean
+  /** See EDGE_OPACITY — the print needs its linework struck harder. */
+  edgeOpacity?: number
 }) {
   return (
     <>
@@ -69,7 +83,7 @@ export function Surface({
           matrixAutoUpdate={false}
           onUpdate={(self) => self.updateMatrix()}
         >
-          <lineBasicMaterial color={EDGE} transparent opacity={0.55} />
+          <lineBasicMaterial color={EDGE} transparent opacity={edgeOpacity} />
         </lineSegments>
       )}
     </>

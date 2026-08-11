@@ -49,7 +49,17 @@ const TRACE = { dark: '#f2efe1', light: '#1b1712' }
 
 /* ------------------------------------------------------------------- pipe */
 
-function Pipe() {
+/**
+ * The pipe, drawn flat.
+ *
+ * Not a lit render — an unlit fill, one value, no gradient across it and no
+ * haze on its ends. A strip a hundred pixels tall cannot show off a shaded
+ * cylinder; all the lighting bought was a soft grey smear that had to be
+ * fought to stay legible against either page. As a solid black form on the
+ * print, and its inverse on the negative, it reads instantly at any size, and
+ * it costs one draw call with no shading maths behind it.
+ */
+function Pipe({ light }: { light: boolean }) {
   const geometry = useMemo(() => {
     const g = new THREE.CylinderGeometry(PIPE.radius, PIPE.radius, PIPE.draw, 64, 1, true)
     g.rotateZ(Math.PI / 2)
@@ -70,26 +80,21 @@ function Pipe() {
     [geometry, flanges],
   )
 
+  const body = light ? COLOUR.pipe.light : COLOUR.pipe.dark
+  const collar = light ? COLOUR.flange.light : COLOUR.flange.dark
+
   return (
     <group>
-      {/*
-        Barely metallic on purpose. Metalness with no environment map has
-        nothing to reflect, so it renders as black — at 0.75 the pipe was a
-        silhouette that only appeared where the machine's lamp lit it. Low
-        metalness and a mid roughness let the diffuse lighting describe the
-        cylinder, which is what makes it read as round.
-      */}
+      {/* fog={false} with the rest: haze is a depth cue, and there is no depth
+          being described here — it would only wash the ends of a flat shape. */}
       <mesh geometry={geometry}>
-        <meshStandardMaterial
-          color={COLOUR.pipe}
-          metalness={0.15}
-          roughness={0.62}
-          side={THREE.DoubleSide}
-        />
+        <meshBasicMaterial color={body} side={THREE.DoubleSide} fog={false} />
       </mesh>
+      {/* The only modelling left. Five collars break the bar into lengths of
+          pipe, which is the whole difference between a pipeline and a rule. */}
       {[-11, -5, 0, 5, 11].map((x) => (
         <mesh key={x} geometry={flanges} position={[x, 0, 0]}>
-          <meshStandardMaterial color={COLOUR.pipeDark} metalness={0.2} roughness={0.5} />
+          <meshBasicMaterial color={collar} fog={false} />
         </mesh>
       ))}
     </group>
@@ -384,25 +389,22 @@ export function MissionScene() {
 
   return (
     <>
-      {/* Keyed from almost straight above: across a shallow strip that is
-          what separates the lit crown of the pipe from its shaded underside,
-          and the gradient between them is the only thing telling anyone it is
-          a cylinder rather than a bar. */}
-      <ambientLight intensity={light ? 0.95 : 0.6} color="#9fb0a4" />
-      <directionalLight position={[2, 14, 6]} intensity={light ? 2.4 : 3.1} color="#f2efe1" />
       {/*
-       * Bounce off the seabed. Without it the pipe's underside falls to the
-       * same black as the page behind it and the cylinder reads as a strip cut
-       * off at the bottom edge rather than as something round. Placed low and
-       * in front so it catches the belly, not the back.
-       */}
-      <directionalLight position={[-3, -9, 5]} intensity={0.7} color="#61707a" />
-      {/* Range is re-derived from the camera distance each frame (see FitPipe);
-          colour matches the page, so the far pipe fades into it. */}
+        The machine is the only lit thing down here now — the pipe under it is
+        drawn flat — so this rig exists to model one small white object well,
+        not to describe a cylinder. Key from above and slightly front, a cool
+        fill opposite to keep its shaded side from going to a silhouette.
+      */}
+      <ambientLight intensity={light ? 0.75 : 0.5} color="#9fb0a4" />
+      <directionalLight position={[2, 9, 7]} intensity={light ? 2.2 : 2.9} color="#f2efe1" />
+      <directionalLight position={[-4, -2, 4]} intensity={0.55} color="#61707a" />
+      {/* Range is re-derived from the camera distance each frame (see FitPipe).
+          The pipe opts out of it — see Pipe — so this now only softens the
+          machine as it works toward the far end of its run. */}
       <fog attach="fog" args={[water, 18, 46]} />
 
       <group ref={band}>
-        <Pipe />
+        <Pipe light={light} />
         {CRACK_POOL.map((crack, i) => (
           <CrackLine key={i} crack={crack} index={i} trace={trace} />
         ))}

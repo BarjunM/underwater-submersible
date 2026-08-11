@@ -281,15 +281,19 @@ export function rovSpeed(t: number, cycle = 0) {
 
 export const COLOUR = {
   /*
-   * Light enough to read against the page.
+   * The pipe is drawn flat, so these are the finished colours — nothing is
+   * going to shade them. Black on the print, where a solid form on cream is
+   * the clearest mark the page can make; on the negative the same form has to
+   * come up off the paper instead, held below the bone the machine itself is
+   * drawn in so the machine still leads.
    *
-   * These were tuned when the pipe filled a whole section and could afford to
-   * sit in shadow. In a strip a few dozen pixels tall a near-black cylinder on
-   * a near-black page is just a gap, and the only part of it anyone could see
-   * was wherever the machine's lamp happened to fall.
+   * The collars are a step lighter than the body in both, not a step further
+   * from the page: black rings on a black pipe only showed up where they broke
+   * the silhouette, so on the print they read as two bumps rather than as
+   * five collars.
    */
-  pipe: '#5b615a',
-  pipeDark: '#3a3f39',
+  pipe: { light: '#14110d', dark: '#4e544c' },
+  flange: { light: '#4a443a', dark: '#868d81' },
   /* Tracks --accent in globals.css. */
   crack: '#4aa6dd',
   /* The mission ROV takes its materials from `parts` in lib/content.ts, same

@@ -50,13 +50,11 @@
   white-space: nowrap;
 }
 
-/* All three of these read as quiet supporting text, but they are supporting
-   text, not decoration — a model designation, what the thing is, and the
-   licence intent. At --bone-34 they measured 2.8:1 on the dark theme, so they
-   sit one level up, still clearly secondary to the wordmark and the
-   addresses. */
+/* A model designation, what the thing is, and the licence intent: quiet
+   supporting text, which is exactly what --bone-34 is for. It failed AA at the
+   value it used to hold; the correction is in the token, not here. */
 .dim {
-  color: var(--bone-52);
+  color: var(--bone-34);
   letter-spacing: 0.2em;
 }
 
@@ -64,7 +62,7 @@
   font-size: 0.56rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--bone-52);
+  color: var(--bone-34);
 }
 
 /* --- contact -------------------------------------------------------------- */
@@ -106,7 +104,7 @@
   font-size: 0.54rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--bone-52);
+  color: var(--bone-34);
 }
 
 @media (pointer: coarse) {

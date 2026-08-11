@@ -11,8 +11,15 @@
   --ink: #0e0f0c;
   --bone: #f2efe1;
   --bone-72: rgba(242, 239, 225, 0.72);
-  --bone-52: rgba(242, 239, 225, 0.52);
-  --bone-34: rgba(242, 239, 225, 0.34);
+  /*
+   * The two quiet levels, set by measurement rather than by the round numbers
+   * they are named for. Every label on the page reads through one of these,
+   * and at 0.52/0.34 they came out at 5.1:1 and 2.8:1 — the lower one failing
+   * AA outright wherever it carried text. Raised until both clear 4.5:1 with
+   * the gap between them still doing its job.
+   */
+  --bone-52: rgba(242, 239, 225, 0.64);
+  --bone-34: rgba(242, 239, 225, 0.5);
   --bone-18: rgba(242, 239, 225, 0.18);
   --bone-10: rgba(242, 239, 225, 0.1);
   --accent: #4aa6dd;
@@ -97,8 +104,10 @@
   --ink: #f7f3e8;
   --bone: #1b1712;
   --bone-72: rgba(27, 23, 18, 0.78);
-  --bone-52: rgba(27, 23, 18, 0.6);
-  --bone-34: rgba(27, 23, 18, 0.44);
+  /* Same correction as the negative, and it has to be a larger one: warm cream
+     is a duller backdrop than near-black, so alpha buys less contrast here. */
+  --bone-52: rgba(27, 23, 18, 0.72);
+  --bone-34: rgba(27, 23, 18, 0.62);
   --bone-18: rgba(27, 23, 18, 0.22);
   --bone-10: rgba(27, 23, 18, 0.09);
   /* Deeper than the negative's blue: on cream a fill has to clear 3:1 against
@@ -116,8 +125,8 @@
   --chip-ink: #1b1712;
 
   --bar-72: rgba(247, 243, 232, 0.8);
-  --bar-52: rgba(247, 243, 232, 0.62);
-  --bar-34: rgba(247, 243, 232, 0.46);
+  --bar-52: rgba(247, 243, 232, 0.66);
+  --bar-34: rgba(247, 243, 232, 0.5);
   --bar-18: rgba(247, 243, 232, 0.26);
   --bar-rule: rgba(247, 243, 232, 0.34);
   /* On a dark bar the negative's brighter blue is already well clear — 6.6:1. */

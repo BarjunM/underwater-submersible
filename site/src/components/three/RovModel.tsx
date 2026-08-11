@@ -17,8 +17,9 @@ import { useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
 import { parts, STACK } from '@/lib/content'
-import { polylines, Surface } from './Surface'
+import { EDGE_OPACITY, polylines, Surface } from './Surface'
 import { EDGE_THRESHOLD, preloadEdges, useFeatureEdges } from './edges'
+import { useTheme } from '@/lib/theme'
 import {
   buildBattery,
   buildCompute,
@@ -193,6 +194,8 @@ function Part({
  * CAD is missing.
  */
 function ProceduralRov({ explode, hidden, steering, hotPart, onHoverPart, onSelectPart }: PartsProps) {
+  // Read once here rather than in every Surface: there are fourteen of them.
+  const edgeOpacity = EDGE_OPACITY[useTheme()]
   const built = useMemo(() => {
     const solids = {
       shell: buildShell(),
@@ -243,6 +246,7 @@ function ProceduralRov({ explode, hidden, steering, hotPart, onHoverPart, onSele
               material={part.material}
               edges={built.edges.get(id) ?? null}
               hot={hotPart === part.id}
+              edgeOpacity={edgeOpacity}
             />
           </Part>
         )
@@ -266,6 +270,8 @@ function partIdFor(object: THREE.Object3D): string | null {
 }
 
 function GlbRov({ explode, hidden, steering, hotPart, onHoverPart, onSelectPart }: PartsProps) {
+  // Read once here rather than in every Surface: there are fourteen of them.
+  const edgeOpacity = EDGE_OPACITY[useTheme()]
   const { scene } = useGLTF(GLB_URL, DRACO_PATH)
 
   const { geometries, normalise } = useMemo(() => {
@@ -383,6 +389,7 @@ function GlbRov({ explode, hidden, steering, hotPart, onHoverPart, onSelectPart 
               material={part.material}
               edges={edges.get(part.id) ?? null}
               hot={hotPart === part.id}
+              edgeOpacity={edgeOpacity}
             />
           </Part>
         )

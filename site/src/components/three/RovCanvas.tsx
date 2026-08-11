@@ -197,7 +197,17 @@ export function RovCanvas({
         the silhouette off a near-black page. No environment map: it would mean
         fetching an HDR from a CDN, and this reads cleanly without one.
       */}
-      <ambientLight intensity={theme === 'light' ? 0.85 : 0.55} color="#8fb4d6" />
+      {/*
+        Less fill on the print, not more.
+        
+        An off-white hull on warm cream is two near-identical values, so what
+        separates the machine from the page is its own shading — and lifting
+        the ambient was washing exactly that out, leaving the model to dissolve
+        into the sheet. On the negative there is no such problem: white on
+        near-black separates on value alone, and the fill is free to open the
+        shadows up.
+      */}
+      <ambientLight intensity={theme === 'light' ? 0.32 : 0.55} color="#8fb4d6" />
       <directionalLight position={[6, 9, 7]} intensity={2.6} color="#fff4e2" />
       <directionalLight position={[-7, 3, -5]} intensity={1.1} color="#7fb2e0" />
       <directionalLight position={[-2, -6, 4]} intensity={0.5} color="#a3d5f7" />
