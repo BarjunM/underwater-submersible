@@ -257,5 +257,7 @@ export const COLOUR = {
   pipeDark: '#171812',
   /* Tracks --accent in globals.css. */
   crack: '#4aa6dd',
-  hull: '#d2a03a',
+  /* The mission ROV takes its materials from `parts` in lib/content.ts, same
+     as the hero — this is only here so the palette reads in one place. */
+  hull: '#ecebe6',
 }

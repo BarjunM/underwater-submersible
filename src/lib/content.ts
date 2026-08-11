@@ -135,7 +135,16 @@ export const mission = {
  * response, `rough` scatters it.
  */
 const MATERIAL = {
-  hull: { color: '#d2a03a', metal: 0.45, rough: 0.42 },
+  /**
+   * The printed outer shell — white.
+   *
+   * Not pure #fff: under the key light that clips to a flat white silhouette
+   * and the form disappears. A hair off white keeps the shading that describes
+   * the hull's curve. Metalness drops with it, because a printed part is not a
+   * metal one — left at the old gold's 0.45 the white read as brushed
+   * aluminium rather than as plastic.
+   */
+  hull: { color: '#ecebe6', metal: 0.08, rough: 0.5 },
   steel: { color: '#a2abb4', metal: 0.9, rough: 0.32 },
   /** Motor cans and mounts — dark, as they read through the shell cutouts. */
   motor: { color: '#33363a', metal: 0.6, rough: 0.45 },
