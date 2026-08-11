@@ -1,17 +1,28 @@
 import type { Metadata, Viewport } from 'next'
 import { THEME_BOOT } from '@/lib/theme'
-import { Azeret_Mono, Bodoni_Moda } from 'next/font/google'
+import { Azeret_Mono, Instrument_Serif } from 'next/font/google'
 import { body as description, site } from '@/lib/content'
 import './globals.css'
 
 /**
- * The pairing the whole design rests on: a high-contrast Didone against a
- * squared-off mechanical mono. The serif carries the claims, the mono carries
- * everything a technician would read — labels, codes, readouts, body copy.
+ * The pairing the whole design rests on: a high-contrast editorial serif
+ * against a squared-off mechanical mono. The serif carries the claims, the
+ * mono carries everything a technician would read — labels, codes, readouts,
+ * body copy.
+ *
+ * Instrument Serif rather than the Bodoni that was here. Bodoni is a Didone
+ * drawn wide and round; set large it reads as a fashion masthead. This is
+ * narrower and sharper, with finer serifs and more contrast, which is the
+ * editorial-technical register the rest of the page is already in.
+ *
+ * Worth knowing: the Bodoni it replaces was downloaded on every visit and
+ * rendered nowhere — the class carrying it was never applied to an element,
+ * so the whole page was mono and three weights of serif were dead payload.
+ * One weight now, and it is actually used.
  */
-const display = Bodoni_Moda({
+const display = Instrument_Serif({
   subsets: ['latin'],
-  weight: ['400', '500', '600'],
+  weight: ['400'],
   variable: '--font-display',
   display: 'swap',
 })

@@ -27,6 +27,10 @@ type ForewordPart = string | { t: string; href?: string; fig?: string }
  * The cover letter, in a prototype-progression format. The milestones are the
  * team's real build history, in their own sequence.
  */
+/** The page description, used for the document metadata and social card. */
+export const body =
+  'An inspection robot that reads dam walls and pipelines by camera — the feed rides the tether, and detection runs at the surface station. Every part below is the real CAD — take it apart, or switch the shell off and look inside.'
+
 export const foreword: { parts: ForewordPart[]; lead?: boolean; dim?: boolean }[] = [
   { parts: ["Hi! We're OceanOptic."], lead: true },
   {
@@ -83,52 +87,6 @@ export const foreword: { parts: ForewordPart[]; lead?: boolean; dim?: boolean }[
   },
 ]
 
-/** Text between asterisks is set in the accent colour. */
-export const headline = ['Finds the *crack*', 'before it becomes a breach.']
-
-export const body =
-  'An inspection robot that reads dam walls and pipelines by camera — the feed rides the tether, and detection runs at the surface station. Every part below is the real CAD — take it apart, or switch the shell off and look inside.'
-
-export const readouts = [
-  { label: 'Autopilot', value: 'ArduSub' },
-  /* 3× A2212 vertical + 2× SunnySky X2212 horizontal, per the build sheet. */
-  { label: 'Thrusters', value: '5' },
-  /* Pressure-chamber validated at 8.5 bar; structural ceiling ~10 bar. */
-  { label: 'Depth', value: '85 m' },
-  { label: 'Detection', value: '0.94' },
-]
-
-/** What actually runs where. Shown in the colophon. */
-export const systems = [
-  ['Autopilot', 'ArduSub on Pixhawk'],
-  ['Onboard', 'BlueOS on Raspberry Pi'],
-  ['Surface', 'QGroundControl via tether'],
-  ['Vision', 'Detection at the surface station'],
-  ['Tether', '100 m Cat5e · WF-16 wet-mate'],
-  ['Power', '3S 18650 pack · ~40 min'],
-]
-
-/**
- * Facts about the model on screen, not about the robot — every one of these is
- * measurable from the conversion pipeline, which is the point: the panel reads
- * as instrumentation because it is.
- */
-export const modelData = [
-  ['source', 'Fusion 360 / STEP'],
-  ['components', '14'],
-  ['triangles', '592,448'],
-  ['transfer', '2.73 MB'],
-  ['units', 'millimetre'],
-  ['envelope', '425 × 234 × 96'],
-]
-
-export const mission = {
-  eyebrow: 'The job',
-  title: 'Find it early, seal it in place.',
-  body:
-    'Fatigue cracks open along a weld seam long before anything shows at the surface. One pass to score every metre of pipe, one pass back to close what it found.',
-}
-
 /**
  * Materials, matched to the real machine rather than the site palette — the
  * point of the model is that it is the actual thing. `metal` raises specular
@@ -143,8 +101,13 @@ const MATERIAL = {
    * the hull's curve. Metalness drops with it, because a printed part is not a
    * metal one — left at the old gold's 0.45 the white read as brushed
    * aluminium rather than as plastic.
+   *
+   * Raised from #ecebe6, which was far enough down toward grey that against
+   * the other printed parts it read as the dull one rather than the white one.
+   * Roughness came down with it: a slightly tighter sheen keeps the highlight
+   * that stops white plastic looking like paper.
    */
-  hull: { color: '#ecebe6', metal: 0.08, rough: 0.5 },
+  hull: { color: '#f6f5f2', metal: 0.06, rough: 0.46 },
   steel: { color: '#a2abb4', metal: 0.9, rough: 0.32 },
   /** Motor cans and mounts — dark, as they read through the shell cutouts. */
   motor: { color: '#33363a', metal: 0.6, rough: 0.45 },

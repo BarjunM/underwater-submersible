@@ -158,9 +158,24 @@
   animation-delay: 1.5s;
 }
 
+/*
+ * The one line set in the serif, and the only place the page raises its voice.
+ *
+ * The display face had been loaded and never applied to anything, so every
+ * word on the site was mono — technically consistent and completely flat. A
+ * single editorial line against all that machine type is what gives the rest
+ * of it somewhere to sit, and it is the greeting, which is the one sentence
+ * that is a person talking rather than a specification.
+ */
 .lead {
   color: var(--bone);
-  font-size: 1.1em;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(2rem, 5.2vw, 3.4rem);
+  font-weight: 400;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  text-transform: none;
+  margin-bottom: 0.55em;
 }
 
 .dim {
