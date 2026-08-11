@@ -309,57 +309,62 @@ export function Console() {
         <div className={styles.middle}>
           {/* Viewer controls, bracketed like a field instrument. */}
           <div className={styles.viewer} ref={viewerRef}>
-            <span className={styles.viewerLabel}>View</span>
-            <div className={styles.viewerBox}>
-              <button
-                type="button"
-                className={styles.viewerKey}
-                onClick={() => nudgeZoom(ZOOM.step)}
-                disabled={zoom >= ZOOM.max}
-                aria-label="Zoom in"
-              >
-                +
-              </button>
-              <button
-                type="button"
-                className={styles.viewerKey}
-                onClick={() => nudgeZoom(-ZOOM.step)}
-                disabled={zoom <= ZOOM.min}
-                aria-label="Zoom out"
-              >
-                −
-              </button>
-              <button
-                type="button"
-                className={`${styles.viewerKey} ${styles.viewerReset}`}
-                onClick={resetView}
-                aria-label="Reset view"
-              >
-                ⟲
-              </button>
+            {/* The keys and what they read, on one line. They used to be a
+                labelled stack — VIEW, then the keys, then the zoom, then
+                DISASSEMBLY, then the slider — six blocks down a tall column
+                to say three things. */}
+            <div className={styles.viewerRow}>
+              <div className={styles.viewerBox}>
+                <button
+                  type="button"
+                  className={styles.viewerKey}
+                  onClick={() => nudgeZoom(ZOOM.step)}
+                  disabled={zoom >= ZOOM.max}
+                  aria-label="Zoom in"
+                >
+                  +
+                </button>
+                <button
+                  type="button"
+                  className={styles.viewerKey}
+                  onClick={() => nudgeZoom(-ZOOM.step)}
+                  disabled={zoom <= ZOOM.min}
+                  aria-label="Zoom out"
+                >
+                  −
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.viewerKey} ${styles.viewerReset}`}
+                  onClick={resetView}
+                  aria-label="Reset view"
+                >
+                  ⟲
+                </button>
+              </div>
+              <span className={styles.viewerRead}>{zoom.toFixed(2)}×</span>
             </div>
-            <span className={styles.viewerRead}>{zoom.toFixed(2)}×</span>
 
             <label className={styles.scrub}>
               <span className={styles.viewerLabel}>Disassembly</span>
-              <input
-                className={styles.scrubInput}
-                type="range"
-                min={0}
-                max={100}
-                value={scrub}
-                onChange={(event) => scrubTo(Number(event.target.value) / 100)}
-                aria-label="Disassembly progress"
-              />
-              <span className={styles.viewerRead}>{scrub}%</span>
+              <span className={styles.scrubRow}>
+                <input
+                  className={styles.scrubInput}
+                  type="range"
+                  min={0}
+                  max={100}
+                  value={scrub}
+                  onChange={(event) => scrubTo(Number(event.target.value) / 100)}
+                  aria-label="Disassembly progress"
+                />
+                <span className={styles.viewerRead}>{scrub}%</span>
+              </span>
             </label>
 
-            {/* Names whatever the pointer is over — model or list. */}
+            {/* Names whatever the pointer is over — model or list. Holds its
+                line when nothing is, so the column does not jump. */}
             <p className={styles.inspect} aria-live="polite">
-              <span className={styles.viewerLabel}>Inspect</span>
-              <span className={styles.inspectValue}>
-                {hotPart ? `${hotPart.code} ${hotPart.name}` : '—'}
-              </span>
+              {hotPart ? `${hotPart.code} ${hotPart.name}` : '—'}
             </p>
           </div>
 
@@ -392,8 +397,8 @@ export function Console() {
                   </li>
                 )
               })}
+              <li className={styles.indexHint}>Click to isolate</li>
             </ul>
-            <p className={styles.indexHint}>Click to isolate</p>
           </section>
         </div>
 

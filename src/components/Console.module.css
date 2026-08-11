@@ -106,12 +106,14 @@
 
 /* --- middle ------------------------------------------------------------- */
 
-/* Three bounded cells divided by hairlines — instruments left, the machine
-   centre, the index right. The references never let a panel float: every
-   region is walled by a rule, and that structure is most of the style. */
+/* Instruments left, the machine centre, the index right — but the two side
+   cells size to their contents and stop. Stretched to the full height they
+   were mostly empty gutter with a rule down each side, which read as two
+   columns of nothing flanking the machine. */
 .middle {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
   min-height: 0;
   border-bottom: 1px solid var(--rule);
 }
@@ -125,11 +127,16 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  justify-content: flex-start;
-  gap: 7px;
-  padding: 14px 16px 16px 0;
-  border-right: 1px solid var(--rule);
+  gap: 14px;
+  padding: 14px 22px 16px 0;
   animation: rise 0.8s 1s both cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+/* The keys and their readout share a line. */
+.viewerRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .viewerLabel,
@@ -142,7 +149,6 @@
 
 .viewerBox {
   display: flex;
-  flex-direction: column;
   border: 1px solid var(--rule);
 }
 
@@ -154,12 +160,12 @@
   font-size: 0.85rem;
   line-height: 1;
   color: var(--bone-72);
-  border-bottom: 1px solid var(--rule);
+  border-right: 1px solid var(--rule);
   transition: background-color 0.15s linear, color 0.15s linear;
 }
 
 .viewerKey:last-child {
-  border-bottom: 0;
+  border-right: 0;
 }
 
 .viewerKey:hover:not(:disabled) {
@@ -182,8 +188,13 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 5px;
-  margin-top: 14px;
+  gap: 6px;
+}
+
+.scrubRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .scrubInput {
@@ -233,19 +244,12 @@
 }
 
 .inspect {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-top: 14px;
-  min-height: 34px;
-}
-
-.inspectValue {
   font-size: 0.62rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--accent-ink);
   white-space: nowrap;
+  min-height: 1em;
 }
 
 /* --- header controls ----------------------------------------------------- */
@@ -297,8 +301,7 @@
   gap: 5px;
   max-height: 100%;
   max-width: min(32vw, 252px);
-  padding: 14px 0 16px 16px;
-  border-left: 1px solid var(--rule);
+  padding: 14px 0 16px 22px;
   animation: rise 0.8s 1.1s both cubic-bezier(0.2, 0.7, 0.3, 1);
 }
 
@@ -618,40 +621,35 @@
   .indexHint {
     display: none;
   }
+  /* The instrument row has to be able to break. On a 320px screen — more so
+     with the enlarged touch targets — the keys, the zoom readout and the
+     scrubber do not fit on one line, and without this the slider and its
+     percentage are simply clipped off the edge of the screen. */
   .viewer {
     grid-column: 1;
     grid-row: 2;
     flex-direction: row;
     align-items: center;
     justify-content: flex-start;
-    gap: 10px;
-    padding: 0;
-    border-right: 0;
-  }
-  .viewerBox {
-    flex-direction: row;
-  }
-  .viewerKey {
-    border-bottom: 0;
-    border-right: 1px solid var(--rule);
-  }
-  .viewerKey:last-child {
-    border-right: 0;
-  }
-  .viewerLabel,
-  /* The instrument row has to be able to break. On a 320px screen — more so
-     with the enlarged touch targets — the keys, the zoom readout and the
-     scrubber do not fit on one line, and without this the slider and its
-     percentage are simply clipped off the edge of the screen. */
-  .viewer {
     flex-wrap: wrap;
+    gap: 10px;
     row-gap: 8px;
+    padding: 0;
+  }
+  /* Stacked, there is no column to head — the label only earns its line in
+     the desktop column. */
+  .viewerLabel,
+  .inspect {
+    display: none;
   }
   .scrub {
     flex-direction: row;
     align-items: center;
     gap: 8px;
-    margin-top: 0;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .scrubRow {
     flex: 1 1 auto;
     min-width: 0;
   }
