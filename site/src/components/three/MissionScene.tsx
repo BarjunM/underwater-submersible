@@ -36,7 +36,6 @@ import {
   view,
   type Crack,
 } from './mission'
-import styles from './Mission.module.css'
 
 /**
  * The two colours the theme decides: the water (fog, matching the page) and
@@ -66,10 +65,23 @@ function Pipe({ light }: { light: boolean }) {
     return g
   }, [])
 
+  /*
+   * A band around the pipe, not a ring on it.
+   *
+   * Anything that stands proud of the pipe shows its rim as a crescent once
+   * you see it off-axis, and across a strip this wide every collar but the
+   * middle one is off-axis. A torus did it worst; a wider cylinder still did
+   * it. So the collar does not stand proud at all — it sits a thousandth
+   * outside the surface, purely to win the depth test, and reads as a band
+   * painted around the pipe with the silhouette running straight past it.
+   *
+   * Open-ended too: a capped cylinder puts a disc at each end of the band,
+   * and off-axis those discs were the crescents.
+   */
   const flanges = useMemo(() => {
-    const ring = new THREE.TorusGeometry(PIPE.radius * 1.06, 0.055, 8, 48)
-    ring.rotateY(Math.PI / 2)
-    return ring
+    const band = new THREE.CylinderGeometry(PIPE.radius * 1.004, PIPE.radius * 1.004, 0.16, 64, 1, true)
+    band.rotateZ(Math.PI / 2)
+    return band
   }, [])
 
   useEffect(
@@ -87,8 +99,13 @@ function Pipe({ light }: { light: boolean }) {
     <group>
       {/* fog={false} with the rest: haze is a depth cue, and there is no depth
           being described here — it would only wash the ends of a flat shape. */}
+      {/* Front faces only. The cylinder is open-ended, so drawing its back
+          wall meant looking straight through the pipe at its own far side —
+          and at the collars, at their far side too, which is where the stray
+          crescents at the outer bands were coming from. Nothing here is ever
+          seen from inside. */}
       <mesh geometry={geometry}>
-        <meshBasicMaterial color={body} side={THREE.DoubleSide} fog={false} />
+        <meshBasicMaterial color={body} side={THREE.FrontSide} fog={false} />
       </mesh>
       {/* The only modelling left. Five collars break the bar into lengths of
           pipe, which is the whole difference between a pipeline and a rule. */}

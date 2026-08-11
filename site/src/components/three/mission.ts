@@ -287,13 +287,20 @@ export const COLOUR = {
    * come up off the paper instead, held below the bone the machine itself is
    * drawn in so the machine still leads.
    *
-   * The collars are a step lighter than the body in both, not a step further
-   * from the page: black rings on a black pipe only showed up where they broke
-   * the silhouette, so on the print they read as two bumps rather than as
-   * five collars.
+   * Black on the print, and as near black as the negative can carry on the
+   * negative — a warm mid grey here read as olive against the page, which is
+   * the one thing a plain black pipe should never look like. The collars are
+   * barely off the body at all.
+   *
+   * A band around a cylinder is a straight line only where you meet it head
+   * on; every other collar is seen at an angle and draws as an arc. That is
+   * simply true, and fighting the geometry was the wrong move — at any real
+   * contrast those arcs read as stray marks scattered on the pipe. Held to a
+   * few percent they read as what they are, seams between lengths of pipe,
+   * and the pipe stays one clean black form.
    */
-  pipe: { light: '#14110d', dark: '#4e544c' },
-  flange: { light: '#4a443a', dark: '#868d81' },
+  pipe: { light: '#0b0a07', dark: '#3c403a' },
+  flange: { light: '#151310', dark: '#474c45' },
   /* Tracks --accent in globals.css. */
   crack: '#4aa6dd',
   /* The mission ROV takes its materials from `parts` in lib/content.ts, same
