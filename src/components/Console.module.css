@@ -438,51 +438,8 @@
   max-width: 52ch;
 }
 
-/* Big enough to carry the page, capped so it never crowds the machine out of
-   the free area above it. */
-.headline {
-  font-family: var(--font-display), Georgia, serif;
-  font-weight: 400;
-  font-size: clamp(1.75rem, 1.05rem + 2vw, 2.9rem);
-  line-height: 1.03;
-  letter-spacing: -0.02em;
-  margin-bottom: 10px;
-}
-
-.line {
-  display: block;
-  animation: rise 0.7s both cubic-bezier(0.2, 0.7, 0.3, 1);
-}
-
-.line:nth-child(1) {
-  animation-delay: 0.95s;
-}
-
-.line:nth-child(2) {
-  animation-delay: 1.08s;
-}
-
-.accent {
-  font-style: italic;
-  color: var(--accent-ink);
-}
-
-.body {
-  font-size: 0.72rem;
-  line-height: 1.7;
-  letter-spacing: 0.02em;
-  max-width: 62ch;
-  color: var(--bone-52);
-  margin-bottom: 14px;
-}
-
 /* On a short viewport the paragraph is the first thing that should go — the
    machine above it is the point of the page. */
-@media (max-height: 780px) {
-  .body {
-    display: none;
-  }
-}
 
 .controls {
   display: flex;
@@ -670,9 +627,6 @@
     border-right: 0;
     max-width: none;
   }
-  .body {
-    display: none;
-  }
   .top {
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 10px;
@@ -703,9 +657,6 @@
   .viewer,
   .middle {
     border-bottom: 0;
-  }
-  .headline {
-    font-size: clamp(1.1rem, 2.4vw, 1.6rem);
   }
   .bottom {
     padding-block: 8px;

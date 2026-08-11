@@ -1,0 +1,20 @@
+/* A strip, not a screen. Full-bleed so the pipe runs edge to edge like a rule
+   under the page, and short enough that it reads as a footer ornament that
+   happens to be working rather than as a fourth section. */
+
+.band {
+  position: relative;
+  width: 100%;
+  height: clamp(84px, 11vh, 128px);
+  pointer-events: none;
+}
+
+.band canvas {
+  display: block;
+}
+
+@media (max-width: 560px) {
+  .band {
+    height: clamp(72px, 12vh, 96px);
+  }
+}

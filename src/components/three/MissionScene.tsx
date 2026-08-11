@@ -33,6 +33,7 @@ import {
   rovX,
   scanning,
   timeOf,
+  view,
   type Crack,
 } from './mission'
 import styles from './Mission.module.css'
@@ -50,7 +51,7 @@ const TRACE = { dark: '#f2efe1', light: '#1b1712' }
 
 function Pipe() {
   const geometry = useMemo(() => {
-    const g = new THREE.CylinderGeometry(PIPE.radius, PIPE.radius, PIPE.length, 64, 1, true)
+    const g = new THREE.CylinderGeometry(PIPE.radius, PIPE.radius, PIPE.draw, 64, 1, true)
     g.rotateZ(Math.PI / 2)
     return g
   }, [])
@@ -79,7 +80,7 @@ function Pipe() {
           side={THREE.DoubleSide}
         />
       </mesh>
-      {[-5, 0, 5].map((x) => (
+      {[-11, -5, 0, 5, 11].map((x) => (
         <mesh key={x} geometry={flanges} position={[x, 0, 0]}>
           <meshStandardMaterial color={COLOUR.pipeDark} metalness={0.8} roughness={0.45} />
         </mesh>
@@ -255,13 +256,23 @@ function MissionRov({ trace, light }: { trace: string; light: boolean }) {
     const prox = busy ? crackProximity(x, cycle) : 0
     const speed = rovSpeed(t, cycle)
 
-    node.position.x = x
+    /*
+     * The machine rides the same band as the pipe, but is not squashed by it:
+     * `span` moves it along the squeezed stretch while its own size stays
+     * uniform, and `thin` sets how far above the pipe "just above" is. Note
+     * proximity is judged on the unsqueezed x — the defects it is looking for
+     * live at those coordinates, and only their drawing is squeezed.
+     */
+    node.position.x = x * view.span
+    node.scale.setScalar(view.thin * 1.7)
 
     // Settling toward the pipe over a defect, damped so arrivals read as a
     // deliberate descent rather than a bounce.
     dip.current = THREE.MathUtils.damp(dip.current, prox * 0.28, 3.5, delta)
-    node.position.y =
+    const hover =
       1.62 - dip.current + Math.sin(elapsed * 0.9) * 0.05 + Math.sin(elapsed * 2.3) * 0.015
+    node.position.y = hover * view.thin
+    node.position.z = 0.35 * view.thin
 
     // Bank into the turn rather than snapping around.
     const heading = rovHeading(t)
@@ -295,7 +306,7 @@ function MissionRov({ trace, light }: { trace: string; light: boolean }) {
   })
 
   return (
-    <group ref={group} position={[0, 1.62, 0.35]}>
+    <group ref={group}>
       {EXTERNAL.map(({ id, material }) => {
         const geometry = geometries.get(id)
         if (!geometry) return null
@@ -370,14 +381,18 @@ function ScanRing({ trace }: { trace: string }) {
 /** Suspended sediment. Sells "underwater" without a single bubble sprite. */
 /* ------------------------------------------------------------------ scene */
 
-export function MissionScene({ onPhase }: { onPhase?: (t: number) => void }) {
+export function MissionScene() {
   const theme = useTheme()
   const light = theme === 'light'
   const trace = light ? TRACE.light : TRACE.dark
   const water = light ? WATER.light : WATER.dark
+  const band = useRef<THREE.Group>(null)
 
-  useFrame(({ clock }) => {
-    onPhase?.(timeOf(clock.getElapsedTime()))
+  // The camera works out how the scene has to sit in the band; applying it is
+  // one group scale. Y and Z thin the pipe, X squeezes the working stretch
+  // into whatever length is actually on screen.
+  useFrame(() => {
+    if (band.current) band.current.scale.set(view.span, view.thin, view.thin)
   })
 
   return (
@@ -389,11 +404,13 @@ export function MissionScene({ onPhase }: { onPhase?: (t: number) => void }) {
           colour matches the page, so the far pipe fades into it. */}
       <fog attach="fog" args={[water, 18, 46]} />
 
-      <Pipe />
-      {CRACK_POOL.map((crack, i) => (
-        <CrackLine key={i} crack={crack} index={i} trace={trace} />
-      ))}
-      <ScanRing trace={trace} />
+      <group ref={band}>
+        <Pipe />
+        {CRACK_POOL.map((crack, i) => (
+          <CrackLine key={i} crack={crack} index={i} trace={trace} />
+        ))}
+        <ScanRing trace={trace} />
+      </group>
       <Suspense fallback={null}>
         <MissionRov trace={trace} light={light} />
       </Suspense>

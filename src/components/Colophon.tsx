@@ -1,4 +1,5 @@
 import { site } from '@/lib/content'
+import { PipeBand } from './PipeBand'
 import styles from './Colophon.module.css'
 
 /**
@@ -30,6 +31,8 @@ export function Colophon() {
           <p className={styles.note}>Open source on release</p>
         </div>
       </div>
+
+      <PipeBand />
     </footer>
   )
 }

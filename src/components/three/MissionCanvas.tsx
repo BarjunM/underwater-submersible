@@ -4,11 +4,11 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { PerformanceMonitor } from '@react-three/drei'
 import { useRef, useState } from 'react'
 import * as THREE from 'three'
-import { clock as sequence } from './mission'
+import { clock as sequence, view } from './mission'
 import { MissionScene } from './MissionScene'
 
 /** Viewing direction, normalised at use. Slightly above and off to one side. */
-const EYE = new THREE.Vector3(0.08, 0.34, 1).normalize()
+const EYE = new THREE.Vector3(0.02, 0.3, 1).normalize()
 const LOOK_AT = new THREE.Vector3(0, 0.15, 0)
 const lookAt = new THREE.Vector3()
 
@@ -22,8 +22,9 @@ const lookAt = new THREE.Vector3()
  * the pipe is a thread and the haze has swallowed it. On a narrow screen we
  * simply watch a shorter run of pipe.
  */
-const FRAME_WIDE = { width: 13, height: 7 }
-const FRAME_NARROW = { width: 6.5, height: 5.6 }
+/** The whole pipe, and the tallest slice of world the band ever shows. */
+const PIPE_SPAN = 15
+const MAX_HEIGHT = 1.55
 
 /**
  * Pulls the camera back far enough to hold the whole pipe, at any aspect.
@@ -52,13 +53,17 @@ function FitPipe() {
     )
     const halfFov = THREE.MathUtils.degToRad(perspective.fov) / 2
 
-    const wide = THREE.MathUtils.clamp((aspect - 0.65) / 0.85, 0, 1)
-    const frameWidth = THREE.MathUtils.lerp(FRAME_NARROW.width, FRAME_WIDE.width, wide)
-    const frameHeight = THREE.MathUtils.lerp(FRAME_NARROW.height, FRAME_WIDE.height, wide)
-
-    const forHeight = frameHeight / 2 / Math.tan(halfFov)
-    const forWidth = frameWidth / 2 / (Math.tan(halfFov) * aspect)
-    const wanted = Math.max(forHeight, forWidth) * 1.06
+    /*
+     * Fit the pipe's length across the band, but never show more than a
+     * slice of height — a band this wide would otherwise pull the camera so
+     * far back that the pipe became a thread.
+     *
+     * Where the band is wide enough, the whole pipe spans it. Where it is not,
+     * the height caps out and the pipe simply runs off both edges, which is
+     * what a pipe should do.
+     */
+    const frameHeight = Math.min(PIPE_SPAN / aspect, MAX_HEIGHT)
+    const wanted = (frameHeight / 2 / Math.tan(halfFov)) * 1.04
 
     const distance = settled.current
       ? THREE.MathUtils.damp(camera.position.length(), wanted, 4, delta)
@@ -68,6 +73,12 @@ function FitPipe() {
     camera.position.copy(EYE).multiplyScalar(distance).add(lookAt)
     camera.lookAt(lookAt)
 
+    // Hand the scene the two numbers it needs to sit in this band: how thin
+    // the pipe should be, and how much of its length is actually on screen.
+    const visibleWidth = frameHeight * aspect
+    view.span = THREE.MathUtils.clamp(visibleWidth / PIPE_SPAN, 0.22, 1)
+    view.thin = 0.2
+
     // Haze has to start just in front of the subject and clear well behind it.
     // Anchoring it to the camera distance keeps the far end of the pipe fading
     // into the dark at any viewport — anchor it too near and the fog eats the
@@ -76,8 +87,12 @@ function FitPipe() {
     // it silently never updates the fog at all.
     if (scene.fog) {
       const fog = scene.fog as THREE.Fog
-      fog.near = distance * 0.9
-      fog.far = distance * 1.85
+      // Pushed further out than the old section needed. Across a band this
+      // wide the pipe's ends are half again as far from the camera as its
+      // middle, and the old range had them dissolving well before the edge of
+      // the strip — the pipe has to reach both sides to read as a rule.
+      fog.near = distance * 1.35
+      fog.far = distance * 3.1
     }
   })
 
@@ -91,7 +106,7 @@ function FitPipe() {
  * measurable. This is footage of a job, and a little convergence makes the
  * pipe recede properly into the dark.
  */
-export function MissionCanvas({ onPhase }: { onPhase?: (t: number) => void }) {
+export function MissionCanvas() {
   // Same policy as the hero: native resolution until the GPU objects, then
   // trade pixels rather than scene.
   const [dpr, setDpr] = useState(() =>
@@ -100,7 +115,14 @@ export function MissionCanvas({ onPhase }: { onPhase?: (t: number) => void }) {
 
   return (
     <Canvas
-      camera={{ position: [1, 4, 12], fov: 36, near: 0.1, far: 200 }}
+      /*
+        A long lens, not a wide one. At 36° the band's aspect pushed the
+        horizontal field past 130°, and a straight pipe seen through that much
+        perspective bows across the frame like a fisheye. Pulling the angle in
+        and the camera back keeps the convergence that makes the pipe recede
+        into the dark, without bending it.
+      */
+      camera={{ position: [1, 4, 12], fov: 13, near: 0.1, far: 400 }}
       dpr={dpr}
       gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
       style={{ width: '100%', height: '100%' }}
@@ -117,7 +139,7 @@ export function MissionCanvas({ onPhase }: { onPhase?: (t: number) => void }) {
         onFallback={() => setDpr(1)}
       />
       <FitPipe />
-      <MissionScene onPhase={onPhase} />
+      <MissionScene />
     </Canvas>
   )
 }

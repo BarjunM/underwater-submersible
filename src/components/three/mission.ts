@@ -24,7 +24,31 @@ const hash01 = (n: number) => {
 
 export const DURATION = 17
 
-export const PIPE = { radius: 1, length: 15, from: -7.5, to: 7.5 }
+/*
+ * `length` is the working stretch — where defects appear and the machine
+ * patrols. `draw` is how much cylinder is actually built, which is longer:
+ * across a wide band the far ends converge under perspective, and a pipe that
+ * stops short of the edge reads as a rod lying on the page rather than as a
+ * pipeline running past it.
+ */
+export const PIPE = { radius: 1, length: 15, draw: 30, from: -7.5, to: 7.5 }
+
+/**
+ * How the scene is squeezed into the footer band.
+ *
+ * The band is a very wide, very short strip — roughly 13:1 — and a pipe is
+ * 7.5:1. One cannot fill the other by scaling alone, so the two axes are
+ * handled separately and the camera writes both each frame:
+ *
+ *   `thin`  scales the pipe's *radius* (and everything wrapped around it)
+ *           without shortening it, so the pipe reads as a slender rule
+ *           spanning the whole width rather than a wall filling the band.
+ *   `span`  squeezes the working area — where the defects are and how far the
+ *           machine travels — into the width actually visible. Without it the
+ *           machine wanders off the ends of a narrow screen and spends most of
+ *           the loop out of frame.
+ */
+export const view = { thin: 0.2, span: 1 }
 
 /** Phase boundaries in normalised time, and what to call each one. */
 export const PHASES = [
@@ -177,8 +201,11 @@ export function crackProximity(x: number, cycle = 0) {
 
 /* -------------------------------------------------------------------- path */
 
-const START = PIPE.from - 1.5
-const END = PIPE.to + 1.5
+/* Held just inside the pipe rather than off its ends. As a section the
+   machine flew in from off-screen and left again; as a permanent strip along
+   the foot of the page it should always be on the pipe, working. */
+const START = PIPE.from + 1
+const END = PIPE.to - 1
 
 /**
  * The machine does not glide — it works. Time spent per metre of pipe scales

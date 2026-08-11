@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { body, headline, parts, site } from '@/lib/content'
+import { parts, site } from '@/lib/content'
 import { applyTheme, useTheme } from '@/lib/theme'
 import { RovCanvasLazy } from './three/RovCanvasLazy'
 import styles from './Console.module.css'
@@ -17,23 +17,6 @@ function separatedCount(progress: number) {
     if (local * local * (3 - 2 * local) > 0.5) count++
   }
   return count
-}
-
-/** Renders *emphasis* markers in a headline line. */
-function Line({ text }: { text: string }) {
-  return (
-    <span className={styles.line}>
-      {text.split(/(\*[^*]+\*)/).map((chunk, i) =>
-        chunk.startsWith('*') && chunk.endsWith('*') ? (
-          <em key={i} className={styles.accent}>
-            {chunk.slice(1, -1)}
-          </em>
-        ) : (
-          chunk
-        ),
-      )}
-    </span>
-  )
 }
 
 export function Console() {
@@ -402,15 +385,11 @@ export function Console() {
           </section>
         </div>
 
+        {/* The claim and the paragraph that used to sit here are gone. The
+            machine says it better than the copy did, and the foreword has
+            already made the case. What is left is the way in. */}
         <footer className={styles.bottom} ref={bottomRef}>
           <div className={styles.copy}>
-            <h1 className={styles.headline}>
-              {headline.map((text) => (
-                <Line key={text} text={text} />
-              ))}
-            </h1>
-            <p className={styles.body}>{body}</p>
-
             <div className={styles.controls}>
               <button
                 type="button"
