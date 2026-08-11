@@ -6,7 +6,8 @@
  *   npm run convert-model
  *
  * Each file becomes a named object inside a single combined OBJ, which is
- * converted to glTF and Draco-compressed into public/models/rov.glb. The site
+ * converted to glTF and Draco-compressed into public/models/rov-outer.glb and
+ * rov-inner.glb — see SHELLS below for the split. The site
  * probes for that file at runtime, so the real machine appears as soon as it
  * exists — no code change needed.
  *
@@ -26,7 +27,20 @@ const { processGltf, gltfToGlb } = gltfPipeline
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const rawDir = path.join(root, 'public', 'models', 'raw')
-const outFile = path.join(root, 'public', 'models', 'rov.glb')
+/*
+ * Two payloads, not one.
+ *
+ * Everything you can see with the shell closed goes in the outer file, which
+ * is what the page loads to draw the machine. The interior — the boards, the
+ * loom, the fasteners — is two thirds of the triangles in the assembly and
+ * none of it is on screen until someone opens the shell, so it is a second
+ * file that is not fetched until they do.
+ */
+const SHELLS = {
+  outer: ['shell', 'tube', 'props', 'thrusters', 'endcaps', 'lens', 'sensor'],
+  inner: ['screws', 'compute', 'autopilot', 'wiring', 'package', 'battery', 'foam'],
+}
+const outFileFor = (shell) => path.join(root, 'public', 'models', `rov-${shell}.glb`)
 const combinedFile = path.join(rawDir, '__combined.obj')
 
 /**
@@ -118,40 +132,51 @@ async function main() {
     process.exit(1)
   }
 
-  console.log(`Merging ${files.length} component${files.length === 1 ? '' : 's'}:`)
+  const known = new Set([...SHELLS.outer, ...SHELLS.inner])
+  const nameOf = (file) => path.basename(file, path.extname(file)).toLowerCase()
+
+  const stray = files.map(nameOf).filter((n) => !known.has(n))
+  if (stray.length) {
+    console.error(
+      `Not in either shell: ${stray.join(', ')}\n\n` +
+        'Add each to SHELLS.outer or SHELLS.inner at the top of this script —\n' +
+        'a part in neither would silently never be drawn.',
+    )
+    process.exit(1)
+  }
 
   const sources = await Promise.all(
     files.map(async (file) => ({
-      name: path.basename(file, path.extname(file)).toLowerCase(),
+      name: nameOf(file),
       text: await readFile(path.join(rawDir, file), 'utf8'),
     })),
   )
 
-  await writeFile(combinedFile, mergeObjs(sources), 'utf8')
+  let total = 0
 
-  try {
-    console.log('Converting to glTF…')
-    const gltf = await obj2gltf(combinedFile, { binary: false, separate: false })
+  for (const [shell, members] of Object.entries(SHELLS)) {
+    const mine = sources.filter((s) => members.includes(s.name))
+    if (mine.length === 0) continue
 
-    console.log('Compressing with Draco…')
-    const compressed = await processGltf(gltf, {
-      dracoOptions: { compressionLevel: 7 },
-    })
+    console.log(`\n${shell}: ${mine.map((s) => s.name).join(', ')}`)
+    await writeFile(combinedFile, mergeObjs(mine), 'utf8')
 
-    const { glb } = await gltfToGlb(compressed.gltf)
-    await writeFile(outFile, glb)
-
-    const mb = (glb.length / 1024 / 1024).toFixed(2)
-    console.log(`\nWrote public/models/rov.glb — ${mb} MB`)
-    if (glb.length > 6 * 1024 * 1024) {
-      console.log(
-        'That is heavy for the web. Re-export from Fusion with a lower\n' +
-          'refinement setting and run this again.',
-      )
+    try {
+      const gltf = await obj2gltf(combinedFile, { binary: false, separate: false })
+      const compressed = await processGltf(gltf, {
+        dracoOptions: { compressionLevel: 7 },
+      })
+      const { glb } = await gltfToGlb(compressed.gltf)
+      await writeFile(outFileFor(shell), glb)
+      total += glb.length
+      console.log(`  → rov-${shell}.glb  ${(glb.length / 1024 / 1024).toFixed(2)} MB`)
+    } finally {
+      await unlink(combinedFile).catch(() => {})
     }
-  } finally {
-    await unlink(combinedFile).catch(() => {})
   }
+
+  console.log(`\nTotal ${(total / 1024 / 1024).toFixed(2)} MB across ${Object.keys(SHELLS).length} files.`)
+  console.log('Only the outer file is on the critical path.')
 }
 
 main().catch((error) => {

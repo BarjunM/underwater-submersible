@@ -5,7 +5,7 @@
  *
  * Finds FreeCAD, tessellates and decimates the assembly into per-part OBJ
  * files (scripts/step_to_obj.py), then merges and Draco-compresses those into
- * public/models/rov.glb (scripts/convert-model.mjs).
+ * public/models/rov-{outer,inner}.glb (scripts/convert-model.mjs).
  *
  * FreeCAD is required because STEP is B-rep — mathematical surfaces, not
  * triangles — and needs a real CAD kernel to tessellate. The WASM builds of

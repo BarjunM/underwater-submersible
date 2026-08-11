@@ -255,7 +255,10 @@ export const parts = [
     code: 'C-09',
     name: 'Internal chassis',
     dir: [0, 1, 0] as [number, number, number],
-    dist: 0.0,
+    /* One of the two things that actually comes off — see MOVERS in
+       three/RovModel.tsx. Travels less far than the hull frame so the two
+       separate from each other rather than moving as one piece. */
+    dist: 2.4,
   },
   {
     id: 'wiring',

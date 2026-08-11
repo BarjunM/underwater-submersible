@@ -4,7 +4,8 @@
  * The machine.
  *
  * Two sources behind one interface:
- *   - /models/rov.glb if it exists (the real CAD, converted)
+ *   - /models/rov-outer.glb if it exists (the real CAD, converted), with
+ *     /models/rov-inner.glb following once the machine is opened up
  *   - otherwise a procedural stand-in with the same named parts
  *
  * Availability is probed with a HEAD request at mount, so converting the CAD
@@ -30,7 +31,32 @@ import {
   buildTube,
 } from './proceduralRov'
 
-export const GLB_URL = '/models/rov.glb'
+/*
+ * The machine arrives in two pieces.
+ *
+ * Two thirds of the assembly's triangles are inside the shell — the boards,
+ * the loom, seventy-three fasteners — and none of it is on screen until
+ * someone opens the machine up. Loading it before the first frame cost 1.8MB
+ * and most of the decode for something nobody was looking at yet.
+ *
+ * So the outer file is the one on the critical path, and the interior is
+ * fetched during the first idle moment after it and only *drawn* once the
+ * disassembly actually starts. By the time the shell opens it is normally
+ * already there.
+ */
+export const GLB_URL = '/models/rov-outer.glb'
+export const INNER_URL = '/models/rov-inner.glb'
+
+/** Which parts live in which file — must match SHELLS in convert-model.mjs. */
+export const INNER_PARTS = new Set([
+  'screws',
+  'compute',
+  'autopilot',
+  'wiring',
+  'package',
+  'battery',
+  'foam',
+])
 
 /**
  * The converted model is Draco-compressed, so it needs a decoder. Self-hosted
@@ -57,8 +83,25 @@ type PartsProps = {
   onSelectPart?: (id: string) => void
 }
 
+/**
+ * The two parts that come off.
+ *
+ * Fourteen parts flying apart at once was a diagram of an assembly, not a
+ * machine anyone could read: everything moved, so nothing was legible, and
+ * the interior had to be present from the first frame to take part in it.
+ * Now the hull frame lifts and the chassis follows it partway, and what that
+ * uncovers stays exactly where it sits — which is both easier to follow and
+ * the reason the interior does not have to be loaded to begin with.
+ *
+ * Every part is still named on hover and still isolates on click. Only the
+ * motion is restricted.
+ */
+const MOVERS = new Set(['shell', 'tube'])
+
 const VECTORS = parts.map((part) =>
-  new THREE.Vector3(...part.dir).normalize().multiplyScalar(part.dist),
+  MOVERS.has(part.id)
+    ? new THREE.Vector3(...part.dir).normalize().multiplyScalar(part.dist)
+    : new THREE.Vector3(),
 )
 
 /**
@@ -269,12 +312,19 @@ function partIdFor(object: THREE.Object3D): string | null {
   return null
 }
 
-function GlbRov({ explode, hidden, steering, hotPart, onHoverPart, onSelectPart }: PartsProps) {
-  // Read once here rather than in every Surface: there are fourteen of them.
-  const edgeOpacity = EDGE_OPACITY[useTheme()]
-  const { scene } = useGLTF(GLB_URL, DRACO_PATH)
+/**
+ * How the raw CAD volume is mapped into the working volume the camera and the
+ * explode offsets assume.
+ *
+ * Derived from the outer file and then *reused verbatim* for the interior.
+ * Deriving it a second time from the interior's own bounds would fit the
+ * boards to the same 5.6 units the whole machine occupies, and they would
+ * arrive several times life size and off centre.
+ */
+type Frame = { centre: THREE.Vector3; scale: number }
 
-  const { geometries, normalise } = useMemo(() => {
+function bakeParts(scene: THREE.Object3D, fixed?: Frame) {
+  return (() => {
     const buckets = new Map<string, THREE.BufferGeometry[]>()
     scene.updateMatrixWorld(true)
 
@@ -326,12 +376,15 @@ function GlbRov({ explode, hidden, steering, hotPart, onHoverPart, onSelectPart 
     }
 
     // Normalise into the working volume the camera and explode offsets assume,
-    // whatever units the CAD was exported in.
+    // whatever units the CAD was exported in. Measured from the outer file and
+    // handed to the interior, never measured twice — see Frame.
     const size = new THREE.Vector3()
-    const centre = new THREE.Vector3()
+    const measured = new THREE.Vector3()
     bounds.getSize(size)
-    bounds.getCenter(centre)
-    const scale = size.length() > 0 ? 5.6 / size.length() : 1
+    bounds.getCenter(measured)
+    const frame: Frame =
+      fixed ?? { centre: measured, scale: size.length() > 0 ? 5.6 / size.length() : 1 }
+    const { centre, scale } = frame
 
     for (const geometry of Array.from(merged.values())) {
       geometry.translate(-centre.x, -centre.y, -centre.z)
@@ -346,8 +399,26 @@ function GlbRov({ explode, hidden, steering, hotPart, onHoverPart, onSelectPart 
       .multiply(new THREE.Matrix4().makeTranslation(-centre.x, -centre.y, -centre.z))
       .multiply(new THREE.Matrix4().makeRotationX(-Math.PI / 2))
 
-    return { geometries: merged, normalise }
-  }, [scene])
+    return { geometries: merged, normalise, frame }
+  })()
+}
+
+/**
+ * Draws whichever parts it has been handed. Both files render through this,
+ * so a part behaves identically whether it came from the outer file or the
+ * interior — same hover, same isolate, same edges.
+ */
+function PartSet({
+  geometries,
+  normalise,
+  explode,
+  hidden,
+  steering,
+  hotPart,
+  onHoverPart,
+  onSelectPart,
+}: PartsProps & { geometries: Map<string, THREE.BufferGeometry>; normalise: THREE.Matrix4 }) {
+  const edgeOpacity = EDGE_OPACITY[useTheme()]
 
   useEffect(
     () => () => Array.from(geometries.values()).forEach((g) => g.dispose()),
@@ -394,6 +465,72 @@ function GlbRov({ explode, hidden, steering, hotPart, onHoverPart, onSelectPart 
           </Part>
         )
       })}
+    </>
+  )
+}
+
+/**
+ * The interior. Suspends on its own file, inside its own boundary, so nothing
+ * it does can un-render the machine that is already on screen.
+ */
+function InnerRov({ frame, ...rest }: PartsProps & { frame: Frame }) {
+  const { scene } = useGLTF(INNER_URL, DRACO_PATH)
+  const { geometries, normalise } = useMemo(() => bakeParts(scene, frame), [scene, frame])
+  return <PartSet {...rest} geometries={geometries} normalise={normalise} />
+}
+
+function GlbRov(props: PartsProps) {
+  const { scene } = useGLTF(GLB_URL, DRACO_PATH)
+  const { geometries, normalise, frame } = useMemo(() => bakeParts(scene), [scene])
+
+  /*
+   * The interior is fetched as soon as the browser is idle after the outer
+   * model is up, and drawn the moment the machine starts coming apart. The
+   * two are deliberately separate: waiting for the open to *start* the fetch
+   * would put 1.8MB between the user's drag and anything happening.
+   */
+  const [openedUp, setOpenedUp] = useState(false)
+
+  useEffect(() => {
+    const fetchInterior = () => useGLTF.preload(INNER_URL, DRACO_PATH)
+    // Safari has no requestIdleCallback; a short timer is close enough, since
+    // all this decides is how long after first paint the fetch starts.
+    if (typeof window.requestIdleCallback === 'function') {
+      const handle = window.requestIdleCallback(fetchInterior)
+      return () => window.cancelIdleCallback(handle)
+    }
+    const handle = window.setTimeout(fetchInterior, 300)
+    return () => window.clearTimeout(handle)
+  }, [])
+
+  /*
+   * Isolating a board from the assembly list is the other way in, and it does
+   * not touch the explode at all — without this, clicking D-12 on a closed
+   * machine hides everything else to reveal a part that was never loaded, and
+   * the viewer goes empty.
+   */
+  const wantsInterior =
+    (props.hidden?.size ?? 0) > 0 || (props.hotPart != null && INNER_PARTS.has(props.hotPart))
+
+  useEffect(() => {
+    if (wantsInterior) setOpenedUp(true)
+  }, [wantsInterior])
+
+  // A ref cannot be watched, so the frame loop raises the flag once — and
+  // never lowers it, because unloading the interior when the shell shuts
+  // would mean paying for it again on the next open.
+  useFrame(() => {
+    if (!openedUp && props.explode.current > 0.005) setOpenedUp(true)
+  })
+
+  return (
+    <>
+      <PartSet {...props} geometries={geometries} normalise={normalise} />
+      {openedUp && (
+        <Suspense fallback={null}>
+          <InnerRov {...props} frame={frame} />
+        </Suspense>
+      )}
     </>
   )
 }
