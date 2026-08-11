@@ -239,8 +239,67 @@ Touch targets grow under `@media (pointer: coarse)` only, so a phone gets
 44px keys and roomier index rows while the desktop keeps the dense drawing the
 references are built on.
 
-## Deploying
+## Deploying to Vercel
 
-Push to a repo and import it on Vercel — it needs no configuration. Commit
-`public/draco/` (the mesh decoder) and `public/models/rov.glb`; the raw OBJ
-exports in `public/models/raw/` are gitignored because they are large.
+The repository is initialised and committed on `main`, and the project is
+already configured — Vercel detects Next.js on its own, so there is no
+`vercel.json` and nothing to fill in at import time.
+
+Either route works:
+
+**From the dashboard.** Push this repo to GitHub, then
+[import it on Vercel](https://vercel.com/new). Framework, build command and
+output directory are all detected. Every push to `main` then redeploys.
+
+```bash
+git remote add origin https://github.com/<you>/oceanoptic.git
+git push -u origin main
+```
+
+**From the terminal.** No GitHub account needed:
+
+```bash
+npx vercel
+```
+
+The first run asks you to log in and to confirm the project name and
+directory; `npx vercel --prod` publishes. Both commands need a browser to
+authenticate, so they have to be run by you.
+
+### What is already handled
+
+- **The social card** resolves to an absolute URL without configuration.
+  Vercel supplies the production hostname at build time, so the first deploy
+  has a working card. Once a real domain is attached, set
+  `NEXT_PUBLIC_SITE_URL` to it in the project's environment variables and it
+  takes priority.
+- **The heavy assets** — the model, the baked edges, the Draco decoder, the
+  plates — are served `max-age=3600, stale-while-revalidate=86400`. Vercel
+  serves `public/` with `max-age=0, must-revalidate` by default, which costs a
+  round trip per asset per visit; for a 2.8 MB model that is the difference
+  between the machine appearing at once and appearing after a stall. Not
+  `immutable`, because these live at fixed URLs and a re-converted model has to
+  be able to reach people who already loaded the old one.
+- **`engines.node`** is `>=18.18`, so the build cannot land on a runtime too
+  old for Next 14.
+- **`_capture.mjs`** is gitignored: a local screenshot utility with hardcoded
+  machine paths and an undeclared `puppeteer-core` dependency. It has no part
+  in the build.
+
+### The one thing to check after the first deploy
+
+`public/models/rov-edges.bin` is stored **already gzipped** and served with an
+explicit `Content-Encoding: gzip` header — 775 kB on the wire instead of
+1.9 MB. Confirm the header survives:
+
+```bash
+curl -sI https://<your-domain>/models/rov-edges.bin | grep -i content-encoding
+```
+
+If it is missing, nothing breaks: the file fails its magic-number check and the
+site derives the feature edges in the browser instead, spread across idle
+callbacks. Correct, just slower — and it says so in the console in development.
+
+Commit `public/draco/` (the mesh decoder), `public/models/rov.glb` and
+`public/models/rov-edges.bin`; the raw OBJ exports in `public/models/raw/` are
+gitignored because they are large and only the conversion scripts need them.
