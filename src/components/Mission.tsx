@@ -90,24 +90,14 @@ export function Mission() {
           <p className={styles.body}>{mission.body}</p>
         </div>
 
+        {/* One line and one rule, where there used to be a six-item list with
+            its own ticked track. What the sequence is doing right now is the
+            only part of it a reader needs. */}
         <footer className={styles.foot}>
-          <ol className={styles.phases}>
-            {PHASES.map((step, i) => (
-              <li
-                key={step.label}
-                className={`${styles.phase} ${i === phase ? styles.phaseOn : ''} ${
-                  i < phase ? styles.phaseDone : ''
-                }`}
-              >
-                <span className={styles.phaseNum}>{String(i + 1).padStart(2, '0')}</span>
-                <span className={styles.phaseLabel}>{step.label}</span>
-              </li>
-            ))}
-          </ol>
+          <p className={styles.phase} aria-live="polite">
+            {PHASES[phase].label}
+          </p>
           <div className={styles.track} aria-hidden="true">
-            {PHASES.map((step) => (
-              <span key={step.at} className={styles.trackTick} style={{ left: `${step.at * 100}%` }} />
-            ))}
             <span className={styles.trackFill} style={{ transform: `scaleX(${progress})` }} />
           </div>
         </footer>

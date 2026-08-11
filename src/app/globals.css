@@ -15,18 +15,11 @@
   --bone-34: rgba(242, 239, 225, 0.34);
   --bone-18: rgba(242, 239, 225, 0.18);
   --bone-10: rgba(242, 239, 225, 0.1);
-  --accent: #e2552f;
+  --accent: #4aa6dd;
 
   --rule: rgba(242, 239, 225, 0.26);
   --rule-strong: rgba(242, 239, 225, 0.42);
   --rule-soft: rgba(242, 239, 225, 0.16);
-
-  /**
-   * The second accent. A machine that works underwater has earned a water
-   * blue, and on the print theme it carries the brand block the way the
-   * reference sheets carry theirs — one saturated field, once, on the mark.
-   */
-  --sky: #5cc2ea;
 
   /**
    * Blocks that reverse out of the page.
@@ -38,6 +31,8 @@
    * stamped in reverse. Kept as variables so no rule has to know which theme
    * it is in — the two can never drift apart.
    */
+  /* The brand block behind the mark. Transparent on the negative, where the
+     mark sits straight on the page; a field of the accent on the print. */
   --brand: transparent;
   --brand-ink: var(--bone);
   --bar: transparent;
@@ -58,20 +53,21 @@
   --bar-rule: var(--rule);
   /* Literal, not var(--accent): .onBar points --accent-ink at this, so
      defining it in terms of the accent would close a reference loop. */
-  --bar-accent: #e2552f;
+  --bar-accent: #4aa6dd;
 
   /**
    * The accent split by job. As a fill it wants to be the brightest thing on
-   * the sheet; as *text* it has to clear 4.5:1, and on warm cream that same
-   * coral only manages 3. Fills keep --accent, type takes --accent-ink, and on
-   * the negative the two are the same colour.
+   * the sheet; as *text* it has to clear 4.5:1, and on warm cream a blue bright
+   * enough to be a good fill only manages 2.4. Fills keep --accent, type takes
+   * --accent-ink, and on the negative the two are the same colour — the blue
+   * that works as a fill on near-black is already 7:1 as type.
    */
   --accent-ink: var(--accent);
 
-  /* Type sitting *on* an accent fill. Near-black in both themes: a coral field
-     wants dark type either way, and reaching for --ink here quietly inverted
-     it on the print theme, leaving cream on coral at 3:1. */
-  --accent-on: #14100c;
+  /* Type sitting *on* an accent fill. Near-black in both themes: this blue is
+     light enough that dark type is the legible choice either way, and reaching
+     for --ink here quietly inverted it on the print theme. */
+  --accent-on: #0b1015;
 
   /* The document frame: hairline border, side rails, registration marks. */
   --frame: clamp(8px, 1.1vw, 16px);
@@ -105,14 +101,15 @@
   --bone-34: rgba(27, 23, 18, 0.44);
   --bone-18: rgba(27, 23, 18, 0.22);
   --bone-10: rgba(27, 23, 18, 0.09);
-  /* Warmer than the negative's vermilion — a coral, against cream. */
-  --accent: #f2573a;
+  /* Deeper than the negative's blue: on cream a fill has to clear 3:1 against
+     the paper as well as carry dark type. */
+  --accent: #2f86c4;
   --rule: rgba(27, 23, 18, 0.34);
   --rule-strong: rgba(27, 23, 18, 0.52);
   --rule-soft: rgba(27, 23, 18, 0.18);
 
-  --brand: var(--sky);
-  --brand-ink: #11100c;
+  --brand: var(--accent);
+  --brand-ink: #0b1015;
   --bar: #1b1712;
   --bar-ink: #f7f3e8;
   --chip: #f7f3e8;
@@ -123,11 +120,11 @@
   --bar-34: rgba(247, 243, 232, 0.46);
   --bar-18: rgba(247, 243, 232, 0.26);
   --bar-rule: rgba(247, 243, 232, 0.34);
-  /* On a black bar the bright coral is already well clear — 5.3:1. */
-  --bar-accent: #f2573a;
+  /* On a dark bar the negative's brighter blue is already well clear — 6.6:1. */
+  --bar-accent: #4aa6dd;
 
-  /* Deeper than the fill, and only ever used as type: 4.8:1 on this stock. */
-  --accent-ink: #c43a17;
+  /* Deeper than the fill, and only ever used as type: 5.4:1 on this stock. */
+  --accent-ink: #1c689f;
 }
 
 /**

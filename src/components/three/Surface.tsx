@@ -39,18 +39,36 @@ export function Surface({
 }) {
   return (
     <>
-      <mesh geometry={geometry} castShadow={false} receiveShadow={false}>
+      {/*
+        The solid and its edges never move inside their part — the group above
+        them carries the whole explode. Telling three that means it stops
+        recomposing two matrices per part per frame, for a transform that is
+        the identity and always will be. `matrix-auto-update={false}` needs one
+        manual update to take effect, which `onUpdate` does on mount.
+      */}
+      <mesh
+        geometry={geometry}
+        castShadow={false}
+        receiveShadow={false}
+        matrixAutoUpdate={false}
+        onUpdate={(self) => self.updateMatrix()}
+      >
         <meshStandardMaterial
           color={material.color}
           metalness={material.metal}
           roughness={material.rough}
           envMapIntensity={0.7}
-          emissive={hot ? '#e2552f' : '#000000'}
+          emissive={hot ? '#4aa6dd' : '#000000'}
           emissiveIntensity={hot ? 0.3 : 0}
         />
       </mesh>
       {edges && (
-        <lineSegments geometry={edges} renderOrder={1}>
+        <lineSegments
+          geometry={edges}
+          renderOrder={1}
+          matrixAutoUpdate={false}
+          onUpdate={(self) => self.updateMatrix()}
+        >
           <lineBasicMaterial color={EDGE} transparent opacity={0.55} />
         </lineSegments>
       )}

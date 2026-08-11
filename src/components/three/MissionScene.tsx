@@ -12,7 +12,7 @@
 
 import { Suspense, useEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Html, useGLTF } from '@react-three/drei'
+import { useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
 import { parts } from '@/lib/content'
 import { useTheme } from '@/lib/theme'
@@ -39,8 +39,7 @@ import styles from './Mission.module.css'
 
 /**
  * The two colours the theme decides: the water (fog, matching the page) and
- * the trace (scan ring, welds, sediment) — bone on the negative, ink on the
- * print. Damage stays vermilion in both.
+ * the trace (scan ring, welds) — bone on the negative, ink on the print.
  */
 /* Must track --ink and --bone in globals.css: the fog fades the far end of the
    pipe into the page itself, so a stale value shows up as a seam. */
@@ -105,15 +104,13 @@ function Pipe() {
 function CrackLine({ crack, index, trace }: { crack: Crack; index: number; trace: string }) {
   const crackRef = useRef<THREE.Mesh>(null)
   const weldRef = useRef<THREE.Mesh>(null)
-  const flag = useRef<HTMLDivElement>(null)
-  const found = useRef(false)
 
   const colours = useMemo(
     () => ({ hot: new THREE.Color(COLOUR.crack), cool: new THREE.Color(trace) }),
     [trace],
   )
 
-  const { tube, weld, count, anchor } = useMemo(() => {
+  const { tube, weld, count } = useMemo(() => {
     const vectors = crack.points.map((p) => new THREE.Vector3(...p))
     const curve = new THREE.CatmullRomCurve3(vectors)
     const t = new THREE.TubeGeometry(curve, 64, 0.019, 5, false)
@@ -122,7 +119,6 @@ function CrackLine({ crack, index, trace }: { crack: Crack; index: number; trace
       tube: t,
       weld: w,
       count: t.index ? t.index.count : 0,
-      anchor: vectors[Math.floor(vectors.length / 2)],
     }
   }, [crack.points])
 
@@ -139,12 +135,10 @@ function CrackLine({ crack, index, trace }: { crack: Crack; index: number; trace
     const t = timeOf(elapsed)
     const cycle = cycleOf(elapsed)
 
-    // Dormant this loop: nothing to grow, flag or seal.
+    // Dormant this loop: nothing to grow or seal.
     if (!crackActive(index, cycle)) {
-      found.current = false
       if (crackRef.current) crackRef.current.visible = false
       if (weldRef.current) weldRef.current.visible = false
-      if (flag.current) flag.current.style.opacity = '0'
       return
     }
 
@@ -172,16 +166,6 @@ function CrackLine({ crack, index, trace }: { crack: Crack; index: number; trace
       // Hot bead cooling to the trace colour as it sets.
       material.color.copy(colours.hot).lerp(colours.cool, sealed)
     }
-
-    // The flag latches as the machine arrives — slightly before dead centre,
-    // so the hover reads as *because* of the detection — and stays up until
-    // the repair closes it. Latching matters on the return pass, where "has
-    // it gone past" flips sign.
-    if (t < 0.08) found.current = false
-    if (scanning(t) && x > crack.x - 0.35) found.current = true
-    if (flag.current) {
-      flag.current.style.opacity = String(found.current && grown > 0.4 ? 1 - sealed : 0)
-    }
   })
 
   return (
@@ -192,15 +176,6 @@ function CrackLine({ crack, index, trace }: { crack: Crack; index: number; trace
       <mesh ref={weldRef} geometry={weld}>
         <meshBasicMaterial color={trace} transparent opacity={0} />
       </mesh>
-
-      <Html position={anchor.toArray()} zIndexRange={[5, 0]} wrapperClass={styles.wrapper}>
-        <div ref={flag} className={styles.flag} style={{ opacity: 0 }}>
-          <span className={styles.flagBox} aria-hidden="true" />
-          <span className={styles.flagText}>
-            crack <span className={styles.flagScore}>{crack.score}</span>
-          </span>
-        </div>
-      </Html>
     </group>
   )
 }
@@ -393,49 +368,6 @@ function ScanRing({ trace }: { trace: string }) {
 /* ------------------------------------------------------------------ motes */
 
 /** Suspended sediment. Sells "underwater" without a single bubble sprite. */
-function Motes({ trace }: { trace: string }) {
-  const ref = useRef<THREE.Points>(null)
-  const count = 140
-
-  const positions = useMemo(() => {
-    const array = new Float32Array(count * 3)
-    for (let i = 0; i < count; i++) {
-      array[i * 3] = (Math.random() - 0.5) * 22
-      array[i * 3 + 1] = (Math.random() - 0.5) * 9
-      array[i * 3 + 2] = (Math.random() - 0.5) * 8
-    }
-    return array
-  }, [])
-
-  useFrame((_, delta) => {
-    const node = ref.current
-    if (!node) return
-    const attribute = node.geometry.attributes.position as THREE.BufferAttribute
-    const array = attribute.array as Float32Array
-    for (let i = 0; i < count; i++) {
-      array[i * 3] -= delta * (0.1 + (i % 5) * 0.03)
-      if (array[i * 3] < -11) array[i * 3] = 11
-    }
-    attribute.needsUpdate = true
-  })
-
-  return (
-    <points ref={ref}>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
-      </bufferGeometry>
-      <pointsMaterial
-        color={trace}
-        size={0.035}
-        transparent
-        opacity={0.3}
-        sizeAttenuation
-        depthWrite={false}
-      />
-    </points>
-  )
-}
-
 /* ------------------------------------------------------------------ scene */
 
 export function MissionScene({ onPhase }: { onPhase?: (t: number) => void }) {
@@ -465,7 +397,6 @@ export function MissionScene({ onPhase }: { onPhase?: (t: number) => void }) {
       <Suspense fallback={null}>
         <MissionRov trace={trace} light={light} />
       </Suspense>
-      <Motes trace={trace} />
     </>
   )
 }

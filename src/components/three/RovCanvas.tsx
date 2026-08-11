@@ -40,6 +40,8 @@ function Frame({
   const box = useMemo(() => new THREE.Box3(), [])
   const corner = useMemo(() => new THREE.Vector3(), [])
   const settled = useRef(false)
+  const lastZoom = useRef(-1)
+  const lastOffset = useRef({ x: NaN, y: NaN })
 
   useFrame((_, delta) => {
     const group = target.current
@@ -92,14 +94,32 @@ function Frame({
     // into the frustum, which moves what you see the other way — hence negated.
     const offsetX = (left - right) / 2
     const offsetY = (top - bottom) / 2
-    if (offsetX || offsetY) {
-      camera.setViewOffset(size.width, size.height, -offsetX, -offsetY, size.width, size.height)
-    } else if (camera.view?.enabled) {
-      camera.clearViewOffset()
+    const offsetChanged = offsetX !== lastOffset.current.x || offsetY !== lastOffset.current.y
+    if (offsetChanged) {
+      lastOffset.current.x = offsetX
+      lastOffset.current.y = offsetY
+      if (offsetX || offsetY) {
+        camera.setViewOffset(size.width, size.height, -offsetX, -offsetY, size.width, size.height)
+      } else if (camera.view?.enabled) {
+        camera.clearViewOffset()
+      }
     }
 
     settled.current = true
-    camera.updateProjectionMatrix()
+
+    /*
+     * Only rebuild the projection when it would actually differ.
+     *
+     * The machine breathes, so the fitted zoom is never perfectly still — but
+     * it settles to within a rounding error of its target and then sits there.
+     * Recomputing the matrix on every one of those frames re-uploads the
+     * camera uniforms for a change too small to see. Below a thousandth of a
+     * unit of zoom, leave it alone.
+     */
+    if (offsetChanged || Math.abs(camera.zoom - lastZoom.current) > 1e-3) {
+      lastZoom.current = camera.zoom
+      camera.updateProjectionMatrix()
+    }
   })
 
   return null

@@ -118,11 +118,14 @@
 
 /* --- viewer controls ---------------------------------------------------- */
 
+/* Grouped at the top, not spread down the column. They used to be spaced
+   against a model-data panel pinned to the bottom; with that gone, spreading
+   them just strands three controls in a tall empty rule. */
 .viewer {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 7px;
   padding: 14px 16px 16px 0;
   border-right: 1px solid var(--rule);
@@ -249,15 +252,15 @@
 
 /* The negative/print switch, matching the one on the foreword: a bordered
    chip with a half-and-half swatch showing the two states it flips between. */
+/* A square switch carrying one glyph — a disc half filled, which is the state
+   it flips between. No word: the two themes have never needed naming. */
 .mode {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 3px 9px;
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
   border: 1px solid var(--rule);
-  font-size: 0.58rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
   color: var(--bone-52);
   transition: border-color 0.18s linear, color 0.18s linear;
 }
@@ -267,12 +270,10 @@
   color: var(--bone);
 }
 
-.modeSwatch {
-  width: 8px;
-  height: 8px;
-  flex: none;
-  background: linear-gradient(135deg, var(--bone) 50%, var(--ink) 50%);
-  border: 1px solid var(--rule);
+.modeIcon {
+  width: 15px;
+  height: 15px;
+  display: block;
 }
 
 .counterGroup {
@@ -283,38 +284,6 @@
 }
 
 /* --- model data --------------------------------------------------------- */
-
-.data {
-  margin-top: auto;
-  padding: 9px 11px;
-  border: 1px solid var(--rule);
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  font-size: 0.55rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  min-width: 178px;
-}
-
-.dataHead {
-  color: var(--accent-ink);
-  letter-spacing: 0.2em;
-  margin-bottom: 4px;
-}
-
-.dataRow {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  color: var(--bone-34);
-}
-
-.dataRow dd {
-  margin: 0;
-  color: var(--bone-72);
-  text-align: right;
-}
 
 /* --- assembly index ----------------------------------------------------- */
 
@@ -378,7 +347,8 @@
     height: 44px;
   }
   .mode {
-    padding: 7px 11px;
+    width: 44px;
+    height: 44px;
   }
   .control {
     padding: 14px 22px;
@@ -588,53 +558,6 @@
   color: var(--ink);
 }
 
-.meta {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 16px;
-  flex: none;
-  padding-left: clamp(18px, 3vw, 40px);
-  border-left: 1px solid var(--rule);
-  align-self: stretch;
-  justify-content: flex-end;
-}
-
-.reg {
-  font-family: var(--font-display), Georgia, serif;
-  font-size: 2.4rem;
-  line-height: 0.8;
-  color: var(--bone-34);
-}
-
-.readouts {
-  display: flex;
-  /* Four readouts now — let the last ones fall to a second row on the
-     narrowest phones rather than shear out of the strip. */
-  flex-wrap: wrap;
-  gap: clamp(16px, 2.2vw, 32px);
-}
-
-.readout {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  text-align: right;
-}
-
-.readoutLabel {
-  font-size: 0.55rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--bone-34);
-}
-
-.readoutValue {
-  font-family: var(--font-display), Georgia, serif;
-  font-size: 1.15rem;
-  line-height: 1;
-}
-
 /* --- motion ------------------------------------------------------------- */
 
 @keyframes rise {
@@ -716,10 +639,6 @@
     border-right: 0;
   }
   .viewerLabel,
-  .data,
-  .inspect {
-    display: none;
-  }
   /* The instrument row has to be able to break. On a 320px screen — more so
      with the enlarged touch targets — the keys, the zoom readout and the
      scrubber do not fit on one line, and without this the slider and its
@@ -753,23 +672,6 @@
     border-right: 0;
     max-width: none;
   }
-  .meta {
-    flex-direction: row-reverse;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 12px;
-    padding-left: 0;
-    border-left: 0;
-    min-width: 0;
-  }
-  .readouts {
-    min-width: 0;
-    flex: 1;
-    justify-content: space-between;
-  }
-  .readout {
-    min-width: 0;
-  }
   .body {
     display: none;
   }
@@ -782,9 +684,6 @@
 @media (max-width: 560px) {
   .overlay {
     padding-inline: var(--gutter);
-  }
-  .readouts {
-    gap: 14px;
   }
 }
 
@@ -804,9 +703,6 @@
 @media (max-height: 520px) and (min-width: 561px) {
   .index,
   .viewer,
-  .meta {
-    display: none;
-  }
   .middle {
     border-bottom: 0;
   }

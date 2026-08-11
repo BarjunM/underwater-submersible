@@ -16,7 +16,7 @@ const INK = '#0e0f0c'
 const BONE = '#f2efe1'
 const RULE = 'rgba(242, 239, 225, 0.32)'
 const DIM = 'rgba(242, 239, 225, 0.5)'
-const ACCENT = '#e2552f'
+const ACCENT = '#4aa6dd'
 
 const corner = (position: Record<string, number>) => ({
   position: 'absolute' as const,

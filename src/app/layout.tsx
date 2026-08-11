@@ -61,9 +61,19 @@ export const viewport: Viewport = {
   themeColor: '#0e0f0c',
 }
 
+/**
+ * `suppressHydrationWarning` on <html> is deliberate. THEME_BOOT applies the
+ * saved theme before React hydrates — that is the whole point of it, since a
+ * saved theme must not flash — so the server cannot know which theme the
+ * attribute will hold. The mismatch is intended; this is how you say so.
+ */
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${display.variable} ${mono.variable}`}>
+    <html
+      lang="en"
+      className={`${display.variable} ${mono.variable}`}
+      suppressHydrationWarning
+    >
       <body>
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT }} />
         {children}

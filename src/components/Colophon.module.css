@@ -1,4 +1,5 @@
-/* Document end matter — a short band, not a screen. Same frame, same voice. */
+/* The foot of the page: a mark on one side, how to reach anyone on the other,
+   divided from the mission by a single rule. */
 
 .colophon {
   position: relative;
@@ -10,108 +11,57 @@
   width: 100%;
   max-width: var(--page);
   margin-inline: auto;
-  padding: clamp(32px, 5vh, 60px) var(--gutter);
+  padding: clamp(30px, 5vh, 56px) var(--gutter);
   display: flex;
-  flex-direction: column;
-  gap: clamp(24px, 4vh, 44px);
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: clamp(20px, 4vw, 56px);
 }
 
-.cols {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: clamp(24px, 4vw, 64px);
-  align-items: start;
-}
+/* --- mark ---------------------------------------------------------------- */
 
-.identity {
+.lockup {
   display: flex;
   align-items: center;
-  gap: clamp(18px, 2vw, 30px);
-}
-
-.block {
+  gap: 12px;
   min-width: 0;
 }
 
-.blockTitle {
-  font-size: 0.58rem;
-  font-weight: 400;
+.roundel {
+  width: 30px;
+  height: 30px;
+  flex: none;
+  color: var(--accent-ink);
+}
+
+.mark {
+  font-size: 0.62rem;
+  font-weight: 500;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: var(--accent-ink);
-  margin-bottom: 12px;
-}
-
-/* --- systems -------------------------------------------------------------- */
-
-/* No rules, just aligned pairs with air between them — a readout, not a
-   ledger. It is the only thing left in this band that carries information. */
-.systems {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin: 0;
-  font-size: 0.62rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.systemsRow {
-  display: flex;
-  align-items: baseline;
-  gap: 16px;
-}
-
-.systemsRow dt {
-  flex: none;
-  width: 13ch;
-  color: var(--bone-34);
-}
-
-.systemsRow dd {
-  margin: 0;
   color: var(--bone-72);
+  white-space: nowrap;
 }
 
-/* --- stamp ---------------------------------------------------------------- */
-
-.roundel {
-  width: clamp(84px, 8vw, 116px);
-  height: auto;
-  color: var(--accent-ink);
-  opacity: 0.9;
-  /* Stamped slightly off-square, the way a hand stamps. */
-  transform: rotate(-8deg);
-}
-
-.roundelText {
-  font-family: var(--font-mono), ui-monospace, Consolas, monospace;
-  font-size: 8px;
-  letter-spacing: 0.22em;
-  fill: currentColor;
-  text-transform: uppercase;
+.dim {
+  color: var(--bone-34);
+  letter-spacing: 0.2em;
 }
 
 /* --- contact -------------------------------------------------------------- */
 
-.marks {
+.contact {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 10px;
-}
-
-.note {
-  font-size: 0.58rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--bone-34);
+  gap: 8px;
+  min-width: 0;
 }
 
 .mail {
-  font-size: 0.58rem;
+  font-size: 0.62rem;
   letter-spacing: 0.14em;
-  color: var(--bone-52);
+  color: var(--bone-72);
   border-bottom: 1px solid transparent;
   padding-bottom: 2px;
   transition: color 0.2s ease, border-color 0.2s ease;
@@ -122,54 +72,26 @@
   border-bottom-color: var(--accent);
 }
 
-@media (pointer: coarse) {
-  .mail {
-    padding: 6px 0 8px;
-  }
-}
-
-/* --- end line ------------------------------------------------------------- */
-
-.end {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  font-size: 0.58rem;
-  letter-spacing: 0.24em;
+.note {
+  font-size: 0.56rem;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--bone-34);
 }
 
-.endRule {
-  flex: 1;
-  height: 1px;
-  background: var(--rule);
-}
-
-/* --- narrow --------------------------------------------------------------- */
-
-@media (max-width: 900px) {
-  .cols {
-    grid-template-columns: 1fr;
-    gap: 26px;
-  }
-  .identity {
-    justify-content: space-between;
-    width: 100%;
-  }
-  .marks {
-    align-items: flex-end;
+@media (pointer: coarse) {
+  .mail {
+    padding: 5px 0 7px;
   }
 }
 
-/* A 13ch label column leaves too little for the value on a phone — every row
-   wraps against a hanging indent. Stacked, each pair reads as a pair. */
 @media (max-width: 560px) {
-  .systemsRow {
+  .inner {
     flex-direction: column;
-    gap: 1px;
+    align-items: flex-start;
+    gap: 24px;
   }
-  .systemsRow dt {
-    width: auto;
+  .contact {
+    align-items: flex-start;
   }
 }

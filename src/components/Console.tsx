@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { body, headline, modelData, parts, readouts, site } from '@/lib/content'
+import { body, headline, parts, site } from '@/lib/content'
 import { applyTheme, useTheme } from '@/lib/theme'
 import { RovCanvasLazy } from './three/RovCanvasLazy'
 import styles from './Console.module.css'
@@ -289,10 +289,13 @@ export function Console() {
               type="button"
               className={styles.mode}
               onClick={toggleTheme}
-              title="Switch between negative and print"
+              title={theme === 'light' ? 'Switch to the dark theme' : 'Switch to the light theme'}
+              aria-label={theme === 'light' ? 'Switch to the dark theme' : 'Switch to the light theme'}
             >
-              <span className={styles.modeSwatch} aria-hidden="true" />
-              {theme === 'light' ? 'Print' : 'Negative'}
+              <svg className={styles.modeIcon} viewBox="0 0 16 16" aria-hidden="true">
+              <circle cx="8" cy="8" r="6.4" fill="none" stroke="currentColor" strokeWidth="1.3" />
+              <path d="M8 1.6a6.4 6.4 0 0 0 0 12.8z" fill="currentColor" />
+            </svg>
             </button>
             <span className={styles.counterGroup} aria-live="polite">
               <span className={count > 0 ? styles.live : styles.dim}>
@@ -358,18 +361,6 @@ export function Console() {
                 {hotPart ? `${hotPart.code} ${hotPart.name}` : '—'}
               </span>
             </p>
-
-            {/* Instrumentation on the model itself — the numbers the
-                conversion pipeline actually reports. */}
-            <dl className={styles.data}>
-              <div className={styles.dataHead}>[ model data ]</div>
-              {modelData.map(([key, value]) => (
-                <div key={key} className={styles.dataRow}>
-                  <dt>{key}</dt>
-                  <dd>{value}</dd>
-                </div>
-              ))}
-            </dl>
           </div>
 
           <section className={styles.index} aria-label="Assembly parts" ref={indexRef}>
@@ -433,20 +424,6 @@ export function Console() {
                 {REVEALS[reveal].label}
               </button>
             </div>
-          </div>
-
-          <div className={styles.meta}>
-            <span className={styles.reg} aria-hidden="true">
-              ®
-            </span>
-            <ul className={styles.readouts}>
-              {readouts.map((readout) => (
-                <li key={readout.label} className={styles.readout}>
-                  <span className={styles.readoutLabel}>{readout.label}</span>
-                  <span className={styles.readoutValue}>{readout.value}</span>
-                </li>
-              ))}
-            </ul>
           </div>
         </footer>
 

@@ -255,6 +255,7 @@ export function rovSpeed(t: number, cycle = 0) {
 export const COLOUR = {
   pipe: '#2b2d26',
   pipeDark: '#171812',
-  crack: '#e2552f',
+  /* Tracks --accent in globals.css. */
+  crack: '#4aa6dd',
   hull: '#d2a03a',
 }

@@ -62,15 +62,15 @@
   letter-spacing: 0.2em;
 }
 
+/* A square switch carrying one glyph — a disc half filled, which is the state
+   it flips between. No word: the two themes have never needed naming. */
 .mode {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 3px 9px;
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
   border: 1px solid var(--rule);
-  font-size: 0.58rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
   color: var(--bone-52);
   transition: border-color 0.18s linear, color 0.18s linear;
 }
@@ -80,11 +80,10 @@
   color: var(--bone);
 }
 
-.modeSwatch {
-  width: 8px;
-  height: 8px;
-  background: linear-gradient(135deg, var(--bone) 50%, var(--ink) 50%);
-  border: 1px solid var(--rule);
+.modeIcon {
+  width: 15px;
+  height: 15px;
+  display: block;
 }
 
 /* --- body ---------------------------------------------------------------- */
@@ -235,7 +234,8 @@
     padding: 10px 0;
   }
   .mode {
-    padding: 7px 11px;
+    width: 44px;
+    height: 44px;
   }
   .link {
     padding: 3px 0;
