@@ -3,9 +3,17 @@
    nothing rounded. The overlay ignores pointer events so the whole viewport
    stays draggable; only the controls take them back. */
 
+/*
+ * Sized to what is left in it, not to the window.
+ *
+ * A full screen was right when this carried a headline, a paragraph and a row
+ * of readouts under the machine. With those gone the same height left the
+ * model floating in a tall void — it is bounded by the width between the
+ * instruments and the index, so the extra height went to nobody.
+ */
 .screen {
   position: relative;
-  height: 100svh;
+  height: clamp(520px, 76svh, 740px);
   overflow: hidden;
 }
 

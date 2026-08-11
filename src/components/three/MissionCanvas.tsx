@@ -8,7 +8,10 @@ import { clock as sequence, view } from './mission'
 import { MissionScene } from './MissionScene'
 
 /** Viewing direction, normalised at use. Slightly above and off to one side. */
-const EYE = new THREE.Vector3(0.02, 0.3, 1).normalize()
+/* No sideways component. The pipe runs along X, so any offset in X tips its
+   projection off the horizontal — in a strip this shallow a degree of tilt is
+   the difference between a rule and a slope. */
+const EYE = new THREE.Vector3(0, 0.28, 1).normalize()
 const LOOK_AT = new THREE.Vector3(0, 0.15, 0)
 const lookAt = new THREE.Vector3()
 
@@ -46,11 +49,9 @@ function FitPipe() {
     // whenever the sequence is held (reduced motion, ?hold=).
     const drifting = sequence.hold == null ? 1 : 0
     const e = state.clock.getElapsedTime()
-    lookAt.set(
-      LOOK_AT.x + Math.sin(e * 0.11) * 0.14 * drifting,
-      LOOK_AT.y + Math.sin(e * 0.17) * 0.07 * drifting,
-      LOOK_AT.z,
-    )
+    // Drifts vertically only, for the same reason: a lateral drift would
+    // swing the pipe off level as the camera wandered.
+    lookAt.set(LOOK_AT.x, LOOK_AT.y + Math.sin(e * 0.17) * 0.05 * drifting, LOOK_AT.z)
     const halfFov = THREE.MathUtils.degToRad(perspective.fov) / 2
 
     /*
