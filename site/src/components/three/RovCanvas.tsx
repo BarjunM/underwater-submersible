@@ -198,19 +198,32 @@ export function RovCanvas({
         fetching an HDR from a CDN, and this reads cleanly without one.
       */}
       {/*
-        Less fill on the print, not more.
+        Less light on the print, not more — the whole rig, not just the fill.
         
-        An off-white hull on warm cream is two near-identical values, so what
-        separates the machine from the page is its own shading — and lifting
-        the ambient was washing exactly that out, leaving the model to dissolve
-        into the sheet. On the negative there is no such problem: white on
-        near-black separates on value alone, and the fill is free to open the
-        shadows up.
+        Two things go wrong on cream at the negative's exposure. An off-white
+        hull on warm cream is two near-identical values, so what separates the
+        machine from the page is its own shading, and lifting the ambient
+        washes exactly that out. And every coloured part — the maroon
+        autopilot case, the green boards, the cells — sits blown out at the top
+        of the tone curve, where a surface has nowhere left to go but white.
+        On near-black that reads as bright; on cream it reads as faded, and
+        the CAD's own colours stop coming through.
+
+        So the print is exposed about a third of a stop down across the board.
+        Nothing about the model changes — it is lit less hard, and the colour
+        that was always in the material gets somewhere to sit.
       */}
-      <ambientLight intensity={theme === 'light' ? 0.32 : 0.55} color="#8fb4d6" />
-      <directionalLight position={[6, 9, 7]} intensity={2.6} color="#fff4e2" />
-      <directionalLight position={[-7, 3, -5]} intensity={1.1} color="#7fb2e0" />
-      <directionalLight position={[-2, -6, 4]} intensity={0.5} color="#a3d5f7" />
+      {(() => {
+        const print = theme === 'light'
+        return (
+          <>
+            <ambientLight intensity={print ? 0.3 : 0.55} color="#8fb4d6" />
+            <directionalLight position={[6, 9, 7]} intensity={print ? 1.85 : 2.6} color="#fff4e2" />
+            <directionalLight position={[-7, 3, -5]} intensity={print ? 0.78 : 1.1} color="#7fb2e0" />
+            <directionalLight position={[-2, -6, 4]} intensity={print ? 0.36 : 0.5} color="#a3d5f7" />
+          </>
+        )
+      })()}
 
       {/* Measured for framing; the centreline sits outside so it can run past
           the machine without dragging the camera back with it. */}

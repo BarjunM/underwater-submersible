@@ -287,10 +287,10 @@ export const COLOUR = {
    * come up off the paper instead, held below the bone the machine itself is
    * drawn in so the machine still leads.
    *
-   * Black on the print, and as near black as the negative can carry on the
-   * negative — a warm mid grey here read as olive against the page, which is
-   * the one thing a plain black pipe should never look like. The collars are
-   * barely off the body at all.
+   * Black on the print, and as near black as the negative can carry. Both
+   * values are mixed off the page's own ink and bone rather than blended by
+   * eye — the green-grey that was here read as olive, which is the one thing
+   * a plain black pipe should never look like.
    *
    * A band around a cylinder is a straight line only where you meet it head
    * on; every other collar is seen at an angle and draws as an arc. That is
@@ -299,10 +299,20 @@ export const COLOUR = {
    * few percent they read as what they are, seams between lengths of pipe,
    * and the pipe stays one clean black form.
    */
-  pipe: { light: '#0b0a07', dark: '#3c403a' },
-  flange: { light: '#151310', dark: '#474c45' },
-  /* Tracks --accent in globals.css. */
-  crack: '#4aa6dd',
+  pipe: { light: '#100e0b', dark: '#33342f' },
+  /* Darker than the body, not lighter. A light band on a dark pipe is the
+     loud direction — it draws as a bright arc away from centre. A dark one
+     reads as the joint between two lengths, which is what it is. */
+  flange: { light: '#050404', dark: '#2a2b26' },
+  /*
+   * Damage, in bone rather than in the accent.
+   *
+   * The accent put the one saturated colour on the whole page down in a strip
+   * meant to be quiet, and blue hairlines on a black pipe read as decoration
+   * rather than as cracks. Bone on both themes, not one per theme: what these
+   * have to contrast with is the pipe, and the pipe is dark on both.
+   */
+  crack: '#f2efe1',
   /* The mission ROV takes its materials from `parts` in lib/content.ts, same
      as the hero — this is only here so the palette reads in one place. */
   hull: '#ecebe6',

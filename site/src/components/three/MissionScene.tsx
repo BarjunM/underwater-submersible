@@ -44,7 +44,15 @@ import {
 /* Must track --ink and --bone in globals.css: the fog fades the far end of the
    pipe into the page itself, so a stale value shows up as a seam. */
 const WATER = { dark: '#0e0f0c', light: '#f7f3e8' }
-const TRACE = { dark: '#f2efe1', light: '#1b1712' }
+/*
+ * The trace does NOT flip with the theme, and the water does.
+ *
+ * The fog is the page, so it has to be whatever the page is. But the scan
+ * ring and the weld bead are drawn on the pipe, and the pipe is near black on
+ * both themes — inking them for the print put dark marks on a black pipe,
+ * where they simply were not there. What they contrast with is the pipe.
+ */
+const TRACE = { dark: '#f2efe1', light: '#f7f3e8' }
 
 /* ------------------------------------------------------------------- pipe */
 
