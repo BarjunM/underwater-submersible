@@ -143,7 +143,7 @@ function crackPath(x: number, angle: number, length: number, seed: number) {
   for (let i = 0; i <= steps; i++) {
     const u = i / steps
     const taper = Math.sin(u * Math.PI)
-    drift += (rng() - 0.5) * 0.22
+    drift += (rng() - 0.5) * 0.13
     const a = angle + drift * 0.5
     const px = x + (u - 0.5) * length
     const r = PIPE.radius * 1.004
@@ -204,8 +204,8 @@ export function crackProximity(x: number, cycle = 0) {
 /* Held just inside the pipe rather than off its ends. As a section the
    machine flew in from off-screen and left again; as a permanent strip along
    the foot of the page it should always be on the pipe, working. */
-const START = PIPE.from + 1
-const END = PIPE.to - 1
+const START = PIPE.from + 2.5
+const END = PIPE.to - 2.5
 
 /**
  * The machine does not glide — it works. Time spent per metre of pipe scales
@@ -280,8 +280,16 @@ export function rovSpeed(t: number, cycle = 0) {
 }
 
 export const COLOUR = {
-  pipe: '#2b2d26',
-  pipeDark: '#171812',
+  /*
+   * Light enough to read against the page.
+   *
+   * These were tuned when the pipe filled a whole section and could afford to
+   * sit in shadow. In a strip a few dozen pixels tall a near-black cylinder on
+   * a near-black page is just a gap, and the only part of it anyone could see
+   * was wherever the machine's lamp happened to fall.
+   */
+  pipe: '#5b615a',
+  pipeDark: '#3a3f39',
   /* Tracks --accent in globals.css. */
   crack: '#4aa6dd',
   /* The mission ROV takes its materials from `parts` in lib/content.ts, same

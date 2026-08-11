@@ -1,5 +1,5 @@
-/* The foot of the page: a mark on one side, how to reach anyone on the other,
-   divided from the mission by a single rule. */
+/* The foot of the page: the mark on one side, how to reach anyone on the
+   other, and the pipe running along the bottom under both. */
 
 .colophon {
   position: relative;
@@ -11,11 +11,11 @@
   width: 100%;
   max-width: var(--page);
   margin-inline: auto;
-  padding: clamp(30px, 5vh, 56px) var(--gutter);
+  padding: clamp(34px, 5.5vh, 64px) var(--gutter) clamp(26px, 4vh, 44px);
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: clamp(20px, 4vw, 56px);
+  gap: clamp(24px, 5vw, 72px);
 }
 
 /* --- mark ---------------------------------------------------------------- */
@@ -23,29 +23,48 @@
 .lockup {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   min-width: 0;
 }
 
 .roundel {
-  width: 30px;
-  height: 30px;
+  width: 34px;
+  height: 34px;
   flex: none;
   color: var(--accent-ink);
 }
 
+.marks {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
 .mark {
-  font-size: 0.62rem;
+  font-size: 0.66rem;
   font-weight: 500;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: var(--bone-72);
+  color: var(--bone);
   white-space: nowrap;
 }
 
+/* All three of these read as quiet supporting text, but they are supporting
+   text, not decoration — a model designation, what the thing is, and the
+   licence intent. At --bone-34 they measured 2.8:1 on the dark theme, so they
+   sit one level up, still clearly secondary to the wordmark and the
+   addresses. */
 .dim {
-  color: var(--bone-34);
+  color: var(--bone-52);
   letter-spacing: 0.2em;
+}
+
+.tag {
+  font-size: 0.56rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--bone-52);
 }
 
 /* --- contact -------------------------------------------------------------- */
@@ -54,13 +73,23 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
 }
 
+/* The one label in the band. Without it the addresses read as data rather
+   than as an invitation, which is the whole point of them being here. */
+.label {
+  font-size: 0.56rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--accent-ink);
+  margin-bottom: 2px;
+}
+
 .mail {
-  font-size: 0.62rem;
-  letter-spacing: 0.14em;
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
   color: var(--bone-72);
   border-bottom: 1px solid transparent;
   padding-bottom: 2px;
@@ -68,15 +97,16 @@
 }
 
 .mail:hover {
-  color: var(--accent-ink);
+  color: var(--bone);
   border-bottom-color: var(--accent);
 }
 
 .note {
-  font-size: 0.56rem;
+  margin-top: 4px;
+  font-size: 0.54rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--bone-34);
+  color: var(--bone-52);
 }
 
 @media (pointer: coarse) {
@@ -89,7 +119,7 @@
   .inner {
     flex-direction: column;
     align-items: flex-start;
-    gap: 24px;
+    gap: 28px;
   }
   .contact {
     align-items: flex-start;

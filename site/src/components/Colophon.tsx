@@ -14,21 +14,28 @@ export function Colophon() {
   return (
     <footer className={styles.colophon} aria-label="Contact">
       <div className={styles.inner}>
+        {/* Two columns of roughly equal weight. The mark alone was a single
+            short line against three on the right, which left the sign-off
+            hanging under a stack of addresses rather than balancing it. */}
         <div className={styles.lockup}>
           <Roundel />
-          <span className={styles.mark}>
-            {site.name} <span className={styles.dim}>{site.mark}</span>
+          <span className={styles.marks}>
+            <span className={styles.mark}>
+              {site.name} <span className={styles.dim}>{site.mark}</span>
+            </span>
+            <span className={styles.tag}>Subsea inspection platform</span>
           </span>
         </div>
 
         <div className={styles.contact}>
+          <span className={styles.label}>Get in touch</span>
           <a className={styles.mail} href={`mailto:${site.email}`}>
             {site.email}
           </a>
           <a className={styles.mail} href={`mailto:${site.email2}`}>
             {site.email2}
           </a>
-          <p className={styles.note}>Open source on release</p>
+          <span className={styles.note}>Open source on release</span>
         </div>
       </div>
 

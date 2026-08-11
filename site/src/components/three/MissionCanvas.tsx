@@ -12,7 +12,11 @@ import { MissionScene } from './MissionScene'
    projection off the horizontal — in a strip this shallow a degree of tilt is
    the difference between a rule and a slope. */
 const EYE = new THREE.Vector3(0, 0.28, 1).normalize()
-const LOOK_AT = new THREE.Vector3(0, 0.15, 0)
+/* Aimed just above the pipe's axis, not well above it. Higher than this and
+   the pipe's lower silhouette falls off the bottom edge of the band, which on
+   the cream theme reads as a dark slab ruled across the foot of the page
+   rather than as something round you are looking down at. */
+const LOOK_AT = new THREE.Vector3(0, 0.06, 0)
 const lookAt = new THREE.Vector3()
 
 /**

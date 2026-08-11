@@ -72,17 +72,24 @@ function Pipe() {
 
   return (
     <group>
+      {/*
+        Barely metallic on purpose. Metalness with no environment map has
+        nothing to reflect, so it renders as black — at 0.75 the pipe was a
+        silhouette that only appeared where the machine's lamp lit it. Low
+        metalness and a mid roughness let the diffuse lighting describe the
+        cylinder, which is what makes it read as round.
+      */}
       <mesh geometry={geometry}>
         <meshStandardMaterial
           color={COLOUR.pipe}
-          metalness={0.75}
-          roughness={0.55}
+          metalness={0.15}
+          roughness={0.62}
           side={THREE.DoubleSide}
         />
       </mesh>
       {[-11, -5, 0, 5, 11].map((x) => (
         <mesh key={x} geometry={flanges} position={[x, 0, 0]}>
-          <meshStandardMaterial color={COLOUR.pipeDark} metalness={0.8} roughness={0.45} />
+          <meshStandardMaterial color={COLOUR.pipeDark} metalness={0.2} roughness={0.5} />
         </mesh>
       ))}
     </group>
@@ -114,8 +121,8 @@ function CrackLine({ crack, index, trace }: { crack: Crack; index: number; trace
   const { tube, weld, count } = useMemo(() => {
     const vectors = crack.points.map((p) => new THREE.Vector3(...p))
     const curve = new THREE.CatmullRomCurve3(vectors)
-    const t = new THREE.TubeGeometry(curve, 64, 0.019, 5, false)
-    const w = new THREE.TubeGeometry(curve, 64, 0.03, 6, false)
+    const t = new THREE.TubeGeometry(curve, 64, 0.011, 5, false)
+    const w = new THREE.TubeGeometry(curve, 64, 0.019, 6, false)
     return {
       tube: t,
       weld: w,
@@ -198,10 +205,9 @@ const EXTERNAL: { id: string; material: { color: string; metal: number; rough: n
  * dips toward the pipe to inspect, pitches with its own way through the
  * water, and carries a work light that plays across the surface beneath it.
  */
-function MissionRov({ trace, light }: { trace: string; light: boolean }) {
+function MissionRov({ light }: { light: boolean }) {
   const { scene } = useGLTF(GLB_URL, DRACO_PATH)
   const group = useRef<THREE.Group>(null)
-  const beam = useRef<THREE.Mesh>(null)
   const lamp = useRef<THREE.PointLight>(null)
   const dip = useRef(0)
 
@@ -281,27 +287,23 @@ function MissionRov({ trace, light }: { trace: string; light: boolean }) {
     node.rotation.z = Math.sin(elapsed * 0.7) * 0.025 - heading * 0.09 * speed
     node.rotation.x = Math.sin(elapsed * 0.5) * 0.02
 
-    if (beam.current) {
-      const on = scanning(t) ? 1 : repairing(t) ? 0.85 : 0.12
-      const focus = 0.5 + 0.9 * prox
-      const material = beam.current.material as THREE.MeshBasicMaterial
-      material.opacity = THREE.MathUtils.damp(
-        material.opacity,
-        on * focus * (light ? 0.07 : 0.085),
-        4,
-        delta,
-      )
-    }
-
     // The work light brightens as it settles over a defect.
     if (lamp.current) {
-      const wanted = busy ? 0.9 + 3.4 * prox : 0.35
+      const wanted = busy ? 0.5 + 1.8 * prox : 0.22
       lamp.current.intensity = THREE.MathUtils.damp(
         lamp.current.intensity,
         light ? wanted * 0.45 : wanted,
         4,
         delta,
       )
+      /*
+       * A light's radius is world-space and is not scaled by its parents, so
+       * shrinking the scene into the band left a lamp reaching seven units
+       * across a pipe a fifth of a unit thick — one blown pool of light with
+       * no falloff visible in it. Scaled by hand to keep the proportion the
+       * scene was lit at.
+       */
+      lamp.current.distance = 7 * view.thin
     }
   })
 
@@ -331,21 +333,6 @@ function MissionRov({ trace, light }: { trace: string; light: boolean }) {
         distance={7}
         decay={2}
       />
-
-      {/* Scan beam onto the pipe below. Additive light reads as glow on ink;
-          on paper it would vanish, so the print blends normally instead. */}
-      <mesh ref={beam} position={[0.35, -0.9, 0]}>
-        <coneGeometry args={[0.5, 1.6, 32, 1, true]} />
-        <meshBasicMaterial
-          key={light ? 'print' : 'negative'}
-          color={trace}
-          transparent
-          opacity={0}
-          side={THREE.DoubleSide}
-          depthWrite={false}
-          blending={light ? THREE.NormalBlending : THREE.AdditiveBlending}
-        />
-      </mesh>
     </group>
   )
 }
@@ -397,9 +384,19 @@ export function MissionScene() {
 
   return (
     <>
-      <ambientLight intensity={light ? 1.2 : 0.95} color="#9fb0a4" />
-      <directionalLight position={[6, 12, 9]} intensity={2.9} color="#f2efe1" />
-      <directionalLight position={[-8, -3, -5]} intensity={1.1} color="#6c7a63" />
+      {/* Keyed from almost straight above: across a shallow strip that is
+          what separates the lit crown of the pipe from its shaded underside,
+          and the gradient between them is the only thing telling anyone it is
+          a cylinder rather than a bar. */}
+      <ambientLight intensity={light ? 0.95 : 0.6} color="#9fb0a4" />
+      <directionalLight position={[2, 14, 6]} intensity={light ? 2.4 : 3.1} color="#f2efe1" />
+      {/*
+       * Bounce off the seabed. Without it the pipe's underside falls to the
+       * same black as the page behind it and the cylinder reads as a strip cut
+       * off at the bottom edge rather than as something round. Placed low and
+       * in front so it catches the belly, not the back.
+       */}
+      <directionalLight position={[-3, -9, 5]} intensity={0.7} color="#61707a" />
       {/* Range is re-derived from the camera distance each frame (see FitPipe);
           colour matches the page, so the far pipe fades into it. */}
       <fog attach="fog" args={[water, 18, 46]} />
@@ -412,7 +409,7 @@ export function MissionScene() {
         <ScanRing trace={trace} />
       </group>
       <Suspense fallback={null}>
-        <MissionRov trace={trace} light={light} />
+        <MissionRov light={light} />
       </Suspense>
     </>
   )
