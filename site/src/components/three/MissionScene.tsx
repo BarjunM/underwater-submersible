@@ -16,7 +16,7 @@ import { useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
 import { parts } from '@/lib/content'
 import { useTheme } from '@/lib/theme'
-import { DRACO_PATH, GLB_URL } from './RovModel'
+import { DRACO_PATH, GLB_URL, partIdFor, unpack } from './RovModel'
 import {
   COLOUR,
   CRACK_POOL,
@@ -73,55 +73,21 @@ function Pipe({ light }: { light: boolean }) {
     return g
   }, [])
 
-  /*
-   * A band around the pipe, not a ring on it.
-   *
-   * Anything that stands proud of the pipe shows its rim as a crescent once
-   * you see it off-axis, and across a strip this wide every collar but the
-   * middle one is off-axis. A torus did it worst; a wider cylinder still did
-   * it. So the collar does not stand proud at all — it sits a thousandth
-   * outside the surface, purely to win the depth test, and reads as a band
-   * painted around the pipe with the silhouette running straight past it.
-   *
-   * Open-ended too: a capped cylinder puts a disc at each end of the band,
-   * and off-axis those discs were the crescents.
-   */
-  const flanges = useMemo(() => {
-    const band = new THREE.CylinderGeometry(PIPE.radius * 1.004, PIPE.radius * 1.004, 0.16, 64, 1, true)
-    band.rotateZ(Math.PI / 2)
-    return band
-  }, [])
 
-  useEffect(
-    () => () => {
-      geometry.dispose()
-      flanges.dispose()
-    },
-    [geometry, flanges],
-  )
+  useEffect(() => () => geometry.dispose(), [geometry])
 
   const body = light ? COLOUR.pipe.light : COLOUR.pipe.dark
-  const collar = light ? COLOUR.flange.light : COLOUR.flange.dark
 
   return (
     <group>
       {/* fog={false} with the rest: haze is a depth cue, and there is no depth
           being described here — it would only wash the ends of a flat shape. */}
       {/* Front faces only. The cylinder is open-ended, so drawing its back
-          wall meant looking straight through the pipe at its own far side —
-          and at the collars, at their far side too, which is where the stray
-          crescents at the outer bands were coming from. Nothing here is ever
-          seen from inside. */}
+          wall meant looking straight through the pipe at its own far side.
+          Nothing here is ever seen from inside. */}
       <mesh geometry={geometry}>
         <meshBasicMaterial color={body} side={THREE.FrontSide} fog={false} />
       </mesh>
-      {/* The only modelling left. Five collars break the bar into lengths of
-          pipe, which is the whole difference between a pipeline and a rule. */}
-      {[-11, -5, 0, 5, 11].map((x) => (
-        <mesh key={x} geometry={flanges} position={[x, 0, 0]}>
-          <meshBasicMaterial color={collar} fog={false} />
-        </mesh>
-      ))}
     </group>
   )
 }
@@ -144,8 +110,8 @@ function CrackLine({ crack, index, trace }: { crack: Crack; index: number; trace
   const weldRef = useRef<THREE.Mesh>(null)
 
   const colours = useMemo(
-    () => ({ hot: new THREE.Color(COLOUR.crack), cool: new THREE.Color(trace) }),
-    [trace],
+    () => ({ hot: new THREE.Color(COLOUR.crack), cool: new THREE.Color(COLOUR.weld) }),
+    [],
   )
 
   const { tube, weld, count } = useMemo(() => {
@@ -212,7 +178,7 @@ function CrackLine({ crack, index, trace }: { crack: Crack; index: number; trace
         <meshBasicMaterial color={COLOUR.crack} />
       </mesh>
       <mesh ref={weldRef} geometry={weld}>
-        <meshBasicMaterial color={trace} transparent opacity={0} />
+        <meshBasicMaterial color={COLOUR.weld} transparent opacity={0} />
       </mesh>
     </group>
   )
@@ -246,17 +212,35 @@ function MissionRov({ light }: { light: boolean }) {
 
     const found = new Map<string, THREE.BufferGeometry>()
     const bounds = new THREE.Box3()
+    const wanted = new Set(EXTERNAL.map((part) => part.id))
 
-    for (const { id } of EXTERNAL) {
-      const node = scene.getObjectByName(id) as THREE.Mesh | undefined
-      if (!node?.geometry) continue
-      const geometry = node.geometry.clone().applyMatrix4(node.matrixWorld)
+    /*
+     * Walked, not looked up by name.
+     *
+     * getObjectByName(id) worked while the encoder put the part name on the
+     * mesh itself. The current one names a parent and hangs an unnamed mesh
+     * off it, so every lookup returned a Group with no geometry, every part
+     * was skipped, and the machine quietly vanished from the band — no error,
+     * just an empty pipe. Matching on the nearest named ancestor is how the
+     * hero has always done it and does not care which way round they sit.
+     */
+    scene.traverse((object) => {
+      const mesh = object as THREE.Mesh
+      if (!mesh.isMesh || !mesh.geometry) return
+      const id = partIdFor(mesh)
+      if (!id || !wanted.has(id) || found.has(id)) return
+
+      const geometry = mesh.geometry.clone()
+      // Same reason as the hero: quantised integer attributes cannot be run
+      // through applyMatrix4 as they arrive. See unpack.
+      unpack(geometry)
+      geometry.applyMatrix4(mesh.matrixWorld)
       // Fusion is Z-up, three.js is Y-up — same bake as the hero.
       geometry.rotateX(-Math.PI / 2)
       geometry.computeBoundingBox()
       if (geometry.boundingBox) bounds.union(geometry.boundingBox)
       found.set(id, geometry)
-    }
+    })
 
     // Centre the assembly and size it to the pipe: hull length ≈ 2.4 units
     // against a pipe of radius 1 — believable for a 425 mm machine on a

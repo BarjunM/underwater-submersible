@@ -23,10 +23,23 @@ export type Insets = { left?: number; right?: number; top?: number; bottom?: num
  * off the edge. Parallel projection is what keeps the machine reading as a
  * measurable object rather than a photograph of one.
  */
+/**
+ * How hard the fit is pushed, closed versus open.
+ *
+ * Assembled, the machine is one compact object sitting in a tall frame, and
+ * fitting it with a uniform margin left it floating in the middle of a lot of
+ * nothing. Exploded, the same parts run as a stack the full height of the
+ * section and need every bit of that room back. So the framing is not one
+ * number: it tightens onto the machine at rest and eases off as the stack
+ * opens, which is the zoom following the disassembly rather than ignoring it.
+ */
+const FILL = { closed: 1.42, open: 1.0 }
+
 function Frame({
   target,
   insets,
   scale,
+  explode,
   margin = 1.08,
 }: {
   target: MutableRefObject<THREE.Group | null>
@@ -34,6 +47,8 @@ function Frame({
   insets?: Insets
   /** The viewer's zoom, multiplied onto the fitted zoom. */
   scale: MutableRefObject<number>
+  /** 0 assembled, 1 fully apart — see FILL. */
+  explode: MutableRefObject<number>
   margin?: number
 }) {
   const { camera, size } = useThree()
@@ -84,7 +99,12 @@ function Frame({
     const availWidth = Math.max(120, size.width - left - right)
     const availHeight = Math.max(120, size.height - top - bottom)
 
-    const wanted = Math.min(availWidth / width, availHeight / height) * scale.current
+    // Eased, not linear, so the machine does not lurch outward the instant the
+    // slider leaves zero.
+    const open = THREE.MathUtils.clamp(explode.current, 0, 1)
+    const fill = THREE.MathUtils.lerp(FILL.closed, FILL.open, open * open * (3 - 2 * open))
+
+    const wanted = Math.min(availWidth / width, availHeight / height) * scale.current * fill
     camera.zoom = settled.current
       ? THREE.MathUtils.damp(camera.zoom, wanted, 3.2, delta)
       : wanted
@@ -238,7 +258,7 @@ export function RovCanvas({
         />
       </group>
       <Axis explode={explode} ink={theme === 'light' ? '#1b1712' : '#f2efe1'} />
-      <Frame target={model} insets={insets} scale={scale} />
+      <Frame target={model} insets={insets} scale={scale} explode={explode} />
 
       <OrbitControls
         ref={controls}

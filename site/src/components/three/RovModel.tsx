@@ -87,24 +87,18 @@ type PartsProps = {
 }
 
 /**
- * The two parts that come off.
+ * Every part comes off, along its own axis — the exploded assembly drawing.
  *
- * Fourteen parts flying apart at once was a diagram of an assembly, not a
- * machine anyone could read: everything moved, so nothing was legible, and
- * the interior had to be present from the first frame to take part in it.
- * Now the hull frame lifts and the chassis follows it partway, and what that
- * uncovers stays exactly where it sits — which is both easier to follow and
- * the reason the interior does not have to be loaded to begin with.
- *
- * Every part is still named on hover and still isolates on click. Only the
- * motion is restricted.
+ * This was briefly cut back to the hull and the chassis, on the theory that
+ * fourteen parts moving at once was hard to read and that holding the interior
+ * still was what let it be loaded late. The first half was wrong: a stack laid
+ * out along one axis is exactly how an assembly is meant to be drawn, and it
+ * is the whole point of the section. The second half never depended on it —
+ * the interior is fetched at idle and drawn as soon as the explode starts, so
+ * it is present by the time anything needs to move.
  */
-const MOVERS = new Set(['shell', 'tube'])
-
 const VECTORS = parts.map((part) =>
-  MOVERS.has(part.id)
-    ? new THREE.Vector3(...part.dir).normalize().multiplyScalar(part.dist)
-    : new THREE.Vector3(),
+  new THREE.Vector3(...part.dir).normalize().multiplyScalar(part.dist),
 )
 
 /**
@@ -303,7 +297,7 @@ function ProceduralRov({ explode, hidden, steering, hotPart, onHoverPart, onSele
 
 /* --------------------------------------------------------------- real CAD */
 
-function partIdFor(object: THREE.Object3D): string | null {
+export function partIdFor(object: THREE.Object3D): string | null {
   let node: THREE.Object3D | null = object
   while (node) {
     const name = node.name.toLowerCase()
@@ -341,7 +335,7 @@ type Frame = { centre: THREE.Vector3; scale: number }
  * whole number and the machine collapses into noise. Both are undone here,
  * before the world transform is applied.
  */
-function unpack(geometry: THREE.BufferGeometry) {
+export function unpack(geometry: THREE.BufferGeometry) {
   for (const name of ['position', 'normal']) {
     const attr = geometry.getAttribute(name) as
       | THREE.BufferAttribute

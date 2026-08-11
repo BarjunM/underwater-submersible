@@ -11,9 +11,12 @@
  * model floating in a tall void — it is bounded by the width between the
  * instruments and the index, so the extra height went to nobody.
  */
+/* The tallest thing on the page, deliberately — the machine is what anyone
+   came for. Still svh-based and still capped, so a short laptop screen is not
+   asked to scroll past a viewer taller than its own window. */
 .screen {
   position: relative;
-  height: clamp(520px, 76svh, 740px);
+  height: clamp(580px, 84svh, 860px);
   overflow: hidden;
 }
 

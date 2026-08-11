@@ -255,10 +255,11 @@ export const parts = [
     code: 'C-09',
     name: 'Internal chassis',
     dir: [0, 1, 0] as [number, number, number],
-    /* One of the two things that actually comes off — see MOVERS in
-       three/RovModel.tsx. Travels less far than the hull frame so the two
-       separate from each other rather than moving as one piece. */
-    dist: 2.4,
+    /* Zero on purpose: the chassis is the datum the rest of the stack is
+       measured from. Everything the hull encloses travels up off it and
+       everything it carries travels down, so it is the one part that stays
+       put. Briefly 2.4, which put it among the propellers. */
+    dist: 0.0,
   },
   {
     id: 'wiring',
