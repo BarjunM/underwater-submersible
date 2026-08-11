@@ -241,30 +241,38 @@ references are built on.
 
 ## Deploying to Vercel
 
-The repository is initialised and committed on `main`, and the project is
-already configured — Vercel detects Next.js on its own, so there is no
-`vercel.json` and nothing to fill in at import time.
+The code is on GitHub at
+[BarjunM/underwater-submersible](https://github.com/BarjunM/underwater-submersible),
+on `main`. Vercel detects Next.js on its own, so there is no `vercel.json` and
+nothing to configure — with **one exception**.
 
-Either route works:
+> **Set the Root Directory to `site`.**
+>
+> The web app lives in `site/`, next to `cad/`. Vercel looks for `package.json`
+> at the repository root by default, finds none, and the build fails before it
+> starts. This is the only setting that has to be changed by hand.
 
-**From the dashboard.** Push this repo to GitHub, then
-[import it on Vercel](https://vercel.com/new). Framework, build command and
-output directory are all detected. Every push to `main` then redeploys.
+**From the dashboard.** [Import the repo](https://vercel.com/new), and on the
+configuration screen open **Root Directory → Edit** and choose `site`. Framework
+(Next.js), build command and output directory are all detected from there.
+Deploy. Every push to `main` redeploys after that, and pull requests get their
+own preview URLs.
+
+**From the terminal**, run it from inside `site/` so the root is implied:
 
 ```bash
-git remote add origin https://github.com/<you>/oceanoptic.git
-git push -u origin main
-```
-
-**From the terminal.** No GitHub account needed:
-
-```bash
+cd site
 npx vercel
 ```
 
-The first run asks you to log in and to confirm the project name and
-directory; `npx vercel --prod` publishes. Both commands need a browser to
-authenticate, so they have to be run by you.
+The first run asks you to log in and to confirm the project; `npx vercel --prod`
+publishes. Either route needs a browser to authenticate, so it has to be run by
+you.
+
+**A custom domain**, when there is one: add it under *Settings → Domains*, then
+set `NEXT_PUBLIC_SITE_URL` to it under *Settings → Environment Variables* and
+redeploy. That variable only affects the social card's absolute URL — without
+it the card still works, pointing at the `.vercel.app` hostname.
 
 ### What is already handled
 
