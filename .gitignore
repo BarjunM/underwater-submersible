@@ -1,0 +1,18 @@
+node_modules
+.next
+out
+.env*.local
+.vercel
+*.tsbuildinfo
+next-env.d.ts
+.superpowers/
+
+# Raw CAD exports are large; only the converted GLB is committed.
+public/models/raw/
+
+# Python bytecode from the FreeCAD conversion script
+scripts/__pycache__/
+scripts/_convert-report.txt
+
+# Local one-off utility: hardcoded machine paths, undeclared puppeteer-core.
+_capture.mjs

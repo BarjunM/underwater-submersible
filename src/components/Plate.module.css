@@ -1,0 +1,166 @@
+/* A figure plate: numbered head, framed image, caption, index of the rest.
+   Same construction as every other panel here — hairlines, no radius, the
+   frame's corners marked the way a plate is registered for printing. */
+
+.plate {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border: 1px solid var(--rule);
+  animation: rise 0.8s 1.25s both cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 11px;
+  border-bottom: 1px solid var(--rule);
+  font-size: 0.56rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--bone-52);
+}
+
+.count {
+  color: var(--accent-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- the frame ------------------------------------------------------------ */
+
+/*
+ * A fixed 4:3 window, not a flexible one.
+ *
+ * Stretching it to whatever height was going spare meant the frame took its
+ * proportions from the viewport instead of from the photograph, and `cover`
+ * then cropped away everything outside a thin horizontal band. A plate keeps
+ * the shape of the image it holds.
+ */
+.frame {
+  position: relative;
+  flex: none;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: var(--bone-10);
+}
+
+.image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.4s linear;
+}
+
+.imageOn {
+  opacity: 1;
+}
+
+/* Registration marks, inside the frame rather than on it — a plate is
+   positioned against its corners. */
+.corner {
+  position: absolute;
+  width: 13px;
+  height: 13px;
+  border: 1px solid var(--bone-34);
+  pointer-events: none;
+}
+
+.cornerTL {
+  top: 9px;
+  left: 9px;
+  border-right: 0;
+  border-bottom: 0;
+}
+.cornerTR {
+  top: 9px;
+  right: 9px;
+  border-left: 0;
+  border-bottom: 0;
+}
+.cornerBL {
+  bottom: 9px;
+  left: 9px;
+  border-right: 0;
+  border-top: 0;
+}
+.cornerBR {
+  bottom: 9px;
+  right: 9px;
+  border-left: 0;
+  border-top: 0;
+}
+
+/* --- caption -------------------------------------------------------------- */
+
+.caption {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 9px 11px;
+  border-top: 1px solid var(--rule);
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.code {
+  flex: none;
+  color: var(--accent-ink);
+}
+
+.captionText {
+  color: var(--bone-72);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --- index ---------------------------------------------------------------- */
+
+.index {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 1px;
+  padding: 0;
+  background: var(--rule-soft);
+  border-top: 1px solid var(--rule);
+}
+
+/* An index is six small keys, not six pictures — without a ceiling they grow
+   with the plate and start competing with it. */
+.thumb {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  max-height: 84px;
+  padding: 0;
+  overflow: hidden;
+  background: var(--ink);
+  opacity: 0.5;
+  transition: opacity 0.18s linear;
+}
+
+.thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.thumb:hover,
+.thumb:focus-visible {
+  opacity: 1;
+}
+
+.thumbOn {
+  opacity: 1;
+  outline: 1px solid var(--accent);
+  outline-offset: -1px;
+}

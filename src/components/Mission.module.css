@@ -1,0 +1,184 @@
+.section {
+  position: relative;
+  /* A band, not a screen: tall enough for the pipe and its instrumentation,
+     no longer pretending to be a second hero. */
+  height: clamp(480px, 72svh, 820px);
+  overflow: hidden;
+  border-top: 1px solid var(--rule);
+}
+
+.stage {
+  position: absolute;
+  inset: 0;
+}
+
+/* --- overlay ------------------------------------------------------------ */
+
+/* Flex rather than a fixed-row grid: with three children, grid tracks put the
+   foot in the middle row instead of at the bottom. */
+.overlay {
+  position: absolute;
+  inset: var(--frame);
+  display: flex;
+  flex-direction: column;
+  padding-inline: var(--gutter);
+  max-width: var(--page);
+  margin-inline: auto;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.foot {
+  margin-top: auto;
+}
+
+.overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 34%;
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--ink) 90%, transparent), transparent);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.overlay::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 30%;
+  background: linear-gradient(to top, var(--ink) 8%, color-mix(in srgb, var(--ink) 82%, transparent) 44%, transparent);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* --- head --------------------------------------------------------------- */
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding-block: clamp(14px, 2.4vh, 30px);
+}
+
+.title {
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(1.7rem, 1.05rem + 2.2vw, 3rem);
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  margin-bottom: 12px;
+  max-width: 22ch;
+}
+
+.body {
+  font-size: 0.72rem;
+  line-height: 1.7;
+  letter-spacing: 0.02em;
+  color: var(--bone-52);
+  max-width: 58ch;
+}
+
+/* --- foot --------------------------------------------------------------- */
+
+.foot {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-block: 12px 16px;
+}
+
+.phases {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(12px, 2.2vw, 30px);
+}
+
+.phase {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--bone-52);
+  opacity: 0.6;
+  transition: opacity 0.35s ease, color 0.35s ease;
+}
+
+.phaseDone {
+  opacity: 0.9;
+}
+
+.phaseOn {
+  opacity: 1;
+  color: var(--accent-ink);
+}
+
+/* The step number, set apart from its label the way a drawing numbers its
+   callouts — tabular so the row does not shuffle as the count changes. */
+.phaseNum {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.55;
+}
+
+.phaseOn .phaseNum {
+  opacity: 1;
+}
+
+.track {
+  position: relative;
+  height: 2px;
+  background: var(--bone-10);
+}
+
+.trackTick {
+  position: absolute;
+  top: -3px;
+  width: 1px;
+  height: 8px;
+  background: var(--bone-18);
+}
+
+.trackFill {
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  transform-origin: left center;
+}
+
+@keyframes turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 900px) {
+  .section {
+    height: clamp(430px, 60svh, 620px);
+  }
+  .head {
+    flex-direction: column-reverse;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .body {
+    display: none;
+  }
+  .phases {
+    gap: 10px;
+  }
+  .phaseLabel {
+    display: none;
+  }
+  .phaseOn .phaseLabel {
+    display: inline;
+  }
+}
+
+@media (max-width: 560px) {
+  .overlay {
+    padding-inline: var(--gutter);
+  }
+}

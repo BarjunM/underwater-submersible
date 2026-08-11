@@ -1,2 +1,14 @@
+# Normalise line endings in the repo so a Windows checkout does not show every
+# file as modified, and the Linux build box gets what it expects.
+* text=auto eol=lf
+
+# Everything below opts out of that. These are binary payloads: normalising
+# line endings in them does not tidy anything, it corrupts the file.
 *.step -text
 *.stp -text
+*.glb binary
+*.bin binary
+*.wasm binary
+*.png binary
+*.jpg binary
+*.woff2 binary

@@ -1,0 +1,12 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 600' width='800' height='600'>
+  <g fill='none' stroke='#948d7d' stroke-width='1.4' opacity='0.5'>
+    <circle cx='400' cy='268' r='62'/>
+    <circle cx='400' cy='268' r='118' stroke-dasharray='5 7'/>
+    <path d='M400 168v200M300 268h200'/>
+  </g>
+  <g fill='#948d7d' font-family='ui-monospace, Consolas, monospace' text-anchor='middle'>
+    <text x='400' y='438' font-size='19' letter-spacing='7' opacity='0.78'>PLATE 05</text>
+    <text x='400' y='470' font-size='13' letter-spacing='4.5' opacity='0.66'>TETHER AND WET-MATE</text>
+    <text x='400' y='506' font-size='11' letter-spacing='3.5' opacity='0.45'>PHOTOGRAPH PENDING</text>
+  </g>
+</svg>

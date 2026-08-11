@@ -1,0 +1,297 @@
+/* The cover: sparse on purpose. One mark, one letter, one plate, one way
+   down. The paragraphs arrive one at a time; nothing else announces itself. */
+
+.foreword {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
+  max-width: var(--page);
+  margin-inline: auto;
+  padding: clamp(30px, 5vh, 64px) var(--gutter) clamp(24px, 3vh, 40px);
+}
+
+/* --- head ---------------------------------------------------------------- */
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: clamp(36px, 8vh, 88px);
+  animation: rise 0.7s 0.55s both cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+/* The brand moment. On the print theme the mark sits in a saturated block —
+   one field of colour, once, the way the reference sheets do it; on the
+   negative the block is transparent and the mark sits on the page. */
+.lockup {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  background: var(--brand);
+  color: var(--brand-ink);
+  padding: 8px 16px 8px 12px;
+  margin-left: -12px;
+}
+
+.mark {
+  width: 26px;
+  height: 26px;
+  color: currentColor;
+  flex: none;
+}
+
+.wordmark {
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+}
+
+.markNo {
+  color: currentColor;
+  opacity: 0.5;
+  letter-spacing: 0.2em;
+}
+
+.mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 9px;
+  border: 1px solid var(--rule);
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--bone-52);
+  transition: border-color 0.18s linear, color 0.18s linear;
+}
+
+.mode:hover {
+  border-color: var(--accent);
+  color: var(--bone);
+}
+
+.modeSwatch {
+  width: 8px;
+  height: 8px;
+  background: linear-gradient(135deg, var(--bone) 50%, var(--ink) 50%);
+  border: 1px solid var(--rule);
+}
+
+/* --- body ---------------------------------------------------------------- */
+
+/* The letter has a reading measure, which on a wide screen left the whole
+   right-hand side of the cover empty. The plate column takes that space —
+   sized to the gap rather than given a width of its own, so the measure keeps
+   the priority and the plate simply fills what is left. */
+.body {
+  display: grid;
+  grid-template-columns: minmax(0, 60ch) minmax(0, 1fr);
+  gap: clamp(24px, 4vw, 64px);
+  align-items: center;
+  flex: 1;
+  min-height: 0;
+}
+
+/*
+ * The plate has a size of its own; the column only says where it sits.
+ *
+ * Left to fill a 1fr track it kept growing with the window — on a 2000px
+ * screen it became a 1470px mural next to a 440px letter, and a plate that
+ * wide crops a photograph to a letterbox slit. Capped, and pushed to the
+ * right margin, it sits opposite the letter the way the lockup and the theme
+ * switch sit opposite each other in the header.
+ */
+.plateColumn {
+  min-width: 0;
+  width: 100%;
+  max-width: 560px;
+  justify-self: end;
+}
+
+/* --- the letter ---------------------------------------------------------- */
+
+/* Sentence case, generous leading, a narrow measure — a person talking,
+   set in the document's own mono so it still belongs to the spec. */
+.letter {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4em;
+  max-width: 60ch;
+  font-size: clamp(0.8rem, 0.75rem + 0.25vw, 0.92rem);
+  line-height: 1.85;
+  letter-spacing: 0.02em;
+  color: var(--bone-72);
+}
+
+.letter p {
+  animation: rise 0.6s both cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+.letter p:nth-child(1) {
+  animation-delay: 0.75s;
+}
+.letter p:nth-child(2) {
+  animation-delay: 0.9s;
+}
+.letter p:nth-child(3) {
+  animation-delay: 1.02s;
+}
+.letter p:nth-child(4) {
+  animation-delay: 1.14s;
+}
+.letter p:nth-child(5) {
+  animation-delay: 1.26s;
+}
+.letter p:nth-child(6) {
+  animation-delay: 1.38s;
+}
+.letter p:nth-child(7) {
+  animation-delay: 1.5s;
+}
+
+.lead {
+  color: var(--bone);
+  font-size: 1.1em;
+}
+
+.dim {
+  color: var(--bone-34);
+  font-size: 0.92em;
+}
+
+.link {
+  color: var(--bone);
+  border-bottom: 1px solid var(--accent);
+  padding-bottom: 1px;
+  transition: color 0.15s linear;
+}
+
+.link:hover {
+  color: var(--accent-ink);
+}
+
+/* A term that points at a plate. Marked with a dotted rule rather than a solid
+   one, the way a document distinguishes a figure reference from a link — some
+   terms are both, and the two marks then sit together without competing. */
+.figRef {
+  cursor: help;
+  border-bottom: 1px dotted var(--bone-34);
+  padding-bottom: 1px;
+  transition: color 0.15s linear, border-color 0.15s linear;
+}
+
+.figRef:hover,
+.figRef:focus-visible {
+  color: var(--accent-ink);
+  border-bottom-color: var(--accent);
+}
+
+.link.figRef {
+  border-bottom-style: solid;
+  border-bottom-color: var(--accent);
+}
+
+/* --- foot ---------------------------------------------------------------- */
+
+.foot {
+  margin-top: auto;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 26px;
+  animation: rise 0.7s 1.7s both cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+.cue {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 0.62rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--bone-52);
+  transition: color 0.18s linear;
+}
+
+.cue:hover {
+  color: var(--accent-ink);
+}
+
+/* Same reasoning as the console's controls: a fingertip needs more than the
+   cap height of a 0.62rem line to aim at. */
+@media (pointer: coarse) {
+  .cue {
+    padding: 10px 0;
+  }
+  .mode {
+    padding: 7px 11px;
+  }
+  .link {
+    padding: 3px 0;
+  }
+}
+
+.cueArrow {
+  display: inline-block;
+  animation: bob 2.2s ease-in-out infinite;
+}
+
+/* --- motion --------------------------------------------------------------- */
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(4px);
+  }
+}
+
+/* --- narrow ---------------------------------------------------------------- */
+
+/* Below this the plate stops being a margin and becomes the next thing you
+   read, under the letter.
+
+   Stacked earlier than the rest of the site's 900px breakpoint on purpose:
+   the letter holds its measure until it has to give it up, so the plate is
+   what gets squeezed, and by 950px it was down to 285px — a thumbnail with a
+   caption. Better to give it the full width one breakpoint sooner. */
+@media (max-width: 1080px) {
+  .body {
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(26px, 5vh, 44px);
+  }
+  .plateColumn {
+    max-width: 560px;
+    justify-self: start;
+  }
+}
+
+@media (max-width: 560px) {
+  .inner {
+    padding-inline: var(--gutter);
+  }
+}
