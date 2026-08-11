@@ -27,7 +27,25 @@ const nextConfig = {
       },
       {
         /*
-         * The model, its decoder and the plates. Vercel serves everything in
+         * The models get the same treatment, and need it more.
+         *
+         * Meshopt deliberately leaves its output easy for a general-purpose
+         * compressor to squeeze — that is most of why it competes with Draco
+         * on the wire despite decoding several times faster. Served raw it
+         * throws that away: the outer file is 1.70 MB uncompressed and 1.09 MB
+         * gzipped. scripts/convert-model.mjs writes them already compressed,
+         * so the encoding has to be declared here.
+         */
+        source: '/models/:file(rov-outer|rov-inner).glb',
+        headers: [
+          { key: 'Content-Encoding', value: 'gzip' },
+          { key: 'Content-Type', value: 'model/gltf-binary' },
+          { key: 'Cache-Control', value: HEAVY_ASSET_CACHE },
+        ],
+      },
+      {
+        /*
+         * The models and the plates. Vercel serves everything in
          * public/ with `max-age=0, must-revalidate`, which costs a round trip
          * per asset on every visit — for a 2.8 MB model that is the difference
          * between the machine appearing at once and appearing after a stall.
@@ -37,7 +55,7 @@ const nextConfig = {
          * of hard cache with a day of background revalidation keeps repeat
          * visits instant and still lets a new export propagate on its own.
          */
-        source: '/:dir(models|draco|figures)/:file*',
+        source: '/:dir(models|figures)/:file*',
         headers: [{ key: 'Cache-Control', value: HEAVY_ASSET_CACHE }],
       },
     ]

@@ -17,13 +17,20 @@
  */
 
 import { readdir, readFile, writeFile, unlink } from 'node:fs/promises'
+import { createRequire } from 'node:module'
+import { spawn } from 'node:child_process'
+import { gzipSync } from 'node:zlib'
 import { existsSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import obj2gltf from 'obj2gltf'
 import gltfPipeline from 'gltf-pipeline'
 
-const { processGltf, gltfToGlb } = gltfPipeline
+const { gltfToGlb } = gltfPipeline
+
+/* Resolved through node rather than assumed at node_modules/.bin, so this
+   works the same under npm, pnpm and a hoisted monorepo install. */
+const gltfpackBin = createRequire(import.meta.url).resolve('gltfpack/cli.js')
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const rawDir = path.join(root, 'public', 'models', 'raw')
@@ -42,6 +49,42 @@ const SHELLS = {
 }
 const outFileFor = (shell) => path.join(root, 'public', 'models', `rov-${shell}.glb`)
 const combinedFile = path.join(rawDir, '__combined.obj')
+
+/**
+ * Meshopt rather than Draco, and quantised on the way.
+ *
+ * Draco squeezes marginally harder but unpacks far slower: it was costing
+ * ~90ms of blocked main thread on a fast desktop, several times that on a
+ * phone, for a file the browser had already finished downloading. Meshopt
+ * decodes in a fraction of that, three ships the decoder already, and drei
+ * wires it up with no code on our side — so dropping Draco also drops the
+ * ~100KB decoder and wasm blob the page used to fetch.
+ *
+ * -vp 12 / -vn 8 is where the quantisation sits: twelve bits across the
+ * machine's longest axis is a step of well under a tenth of a millimetre,
+ * which is finer than the CAD's own tessellation tolerance and far finer than
+ * a screen a few hundred pixels tall can resolve. The default fourteen was
+ * paying for precision nothing downstream could use.
+ *
+ * -kn -km keep node and material names: the site sorts geometry into parts by
+ * node name, so stripping them would leave every mesh unassigned.
+ */
+function pack(input, output) {
+  return new Promise((resolve, reject) => {
+    const args = ['-i', input, '-o', output, '-cc', '-vp', '12', '-vn', '8', '-vt', '12', '-kn', '-km']
+    // Run through the current node rather than relying on a shebang, which
+    // does nothing on Windows.
+    const child = spawn(process.execPath, [gltfpackBin, ...args], {
+      stdio: ['ignore', 'pipe', 'pipe'],
+    })
+    let err = ''
+    child.stderr.on('data', (d) => (err += d))
+    child.on('error', reject)
+    child.on('close', (code) =>
+      code === 0 ? resolve() : reject(new Error(`gltfpack exited ${code}\n${err}`)),
+    )
+  })
+}
 
 /**
  * Concatenates OBJ files into one, wrapping each in its own named object.
@@ -161,17 +204,33 @@ async function main() {
     console.log(`\n${shell}: ${mine.map((s) => s.name).join(', ')}`)
     await writeFile(combinedFile, mergeObjs(mine), 'utf8')
 
+    const plainFile = `${combinedFile}.glb`
     try {
       const gltf = await obj2gltf(combinedFile, { binary: false, separate: false })
-      const compressed = await processGltf(gltf, {
-        dracoOptions: { compressionLevel: 7 },
-      })
-      const { glb } = await gltfToGlb(compressed.gltf)
-      await writeFile(outFileFor(shell), glb)
-      total += glb.length
-      console.log(`  → rov-${shell}.glb  ${(glb.length / 1024 / 1024).toFixed(2)} MB`)
+      const { glb } = await gltfToGlb(gltf)
+      await writeFile(plainFile, glb)
+      await pack(plainFile, outFileFor(shell))
+
+      /*
+       * Written to disk already gzipped, and declared as such in
+       * next.config.mjs — the same treatment the baked edges get, for the
+       * same reason. Meshopt deliberately leaves its output easy for a
+       * general-purpose compressor to squeeze, which is most of why it is
+       * competitive with Draco on the wire; served raw it throws that away.
+       * Next serves application/octet-stream uncompressed, so this cannot be
+       * left to the server.
+       */
+      const packed = await readFile(outFileFor(shell))
+      const squeezed = gzipSync(packed, { level: 9 })
+      await writeFile(outFileFor(shell), squeezed)
+      total += squeezed.length
+      console.log(
+        `  → rov-${shell}.glb  ${(squeezed.length / 1024 / 1024).toFixed(2)} MB gzipped` +
+          `  (${(packed.length / 1024 / 1024).toFixed(2)} MB raw)`,
+      )
     } finally {
       await unlink(combinedFile).catch(() => {})
+      await unlink(plainFile).catch(() => {})
     }
   }
 

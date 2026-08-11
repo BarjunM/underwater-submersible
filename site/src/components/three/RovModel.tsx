@@ -59,11 +59,14 @@ export const INNER_PARTS = new Set([
 ])
 
 /**
- * The converted model is Draco-compressed, so it needs a decoder. Self-hosted
- * from /public/draco rather than pulled off Google's CDN — no third-party
- * request, and it still works offline.
+ * Draco is switched off — the models are Meshopt-compressed now.
+ *
+ * `false` here is load-bearing rather than tidiness: left on, drei builds a
+ * DRACOLoader and fetches its ~100KB decoder and wasm blob on every visit, for
+ * files that no longer contain a single Draco-compressed primitive. The
+ * Meshopt decoder it needs instead ships inside three and costs no request.
  */
-export const DRACO_PATH = '/draco/'
+export const DRACO_PATH = false as const
 
 /**
  * Above this, extracting feature edges costs more than it returns: the parts
@@ -110,7 +113,7 @@ const VECTORS = parts.map((part) =>
  * model. That chain used to cost most of a second of dead time before a single
  * byte of the machine was requested.
  */
-useGLTF.preload(GLB_URL, DRACO_PATH)
+useGLTF.preload(GLB_URL, false)
 preloadEdges()
 
 /* ------------------------------------------------------------------- axis */
@@ -323,6 +326,75 @@ function partIdFor(object: THREE.Object3D): string | null {
  */
 type Frame = { centre: THREE.Vector3; scale: number }
 
+/**
+ * Undoes Meshopt's packing before anything reads the numbers.
+ *
+ * gltfpack ships vertex data two ways this pipeline cannot take raw. It
+ * interleaves the attributes into one buffer, which `mergeGeometries` refuses
+ * outright. And under KHR_mesh_quantization it stores positions and normals as
+ * normalised integers, with the scale that turns them back into millimetres
+ * folded into the node transform.
+ *
+ * That second one is the dangerous one, because nothing throws: `applyMatrix4`
+ * writes its float results straight back into whichever array it finds, so a
+ * matrix applied to an Int16 buffer truncates every coordinate to a small
+ * whole number and the machine collapses into noise. Both are undone here,
+ * before the world transform is applied.
+ */
+function unpack(geometry: THREE.BufferGeometry) {
+  for (const name of ['position', 'normal']) {
+    const attr = geometry.getAttribute(name) as
+      | THREE.BufferAttribute
+      | THREE.InterleavedBufferAttribute
+      | undefined
+    if (!attr) continue
+    if (attr.array instanceof Float32Array && !attr.normalized && !isInterleaved(attr)) continue
+
+    /*
+     * Both jobs in one strided pass over the raw buffer.
+     *
+     * three has deinterleaveGeometry for the first half, but it moves data a
+     * component at a time through getX/setX — a method call and a type switch
+     * each — and on this assembly that measured 1.4 SECONDS, which is an order
+     * of magnitude more than the Draco decode it was supposed to be replacing.
+     * Reading the interleaved buffer directly turns it into one tight loop.
+     */
+    const size = attr.itemSize
+    const out = new Float32Array(attr.count * size)
+    const k = attr.normalized ? (DENORM.get(attr.array.constructor) ?? 1) : 1
+
+    if (isInterleaved(attr)) {
+      const src = attr.data.array as unknown as ArrayLike<number>
+      const stride = attr.data.stride
+      for (let i = 0; i < attr.count; i++) {
+        const base = i * stride + attr.offset
+        for (let c = 0; c < size; c++) out[i * size + c] = src[base + c] * k
+      }
+    } else {
+      const src = attr.array as unknown as ArrayLike<number>
+      for (let i = 0; i < out.length; i++) out[i] = src[i] * k
+    }
+
+    geometry.setAttribute(name, new THREE.BufferAttribute(out, size))
+  }
+}
+
+function isInterleaved(
+  attr: THREE.BufferAttribute | THREE.InterleavedBufferAttribute,
+): attr is THREE.InterleavedBufferAttribute {
+  return (attr as THREE.InterleavedBufferAttribute).isInterleavedBufferAttribute === true
+}
+
+/** Full-scale divisor per integer type, matching three's own denormalise. */
+const DENORM = new Map<unknown, number>([
+  [Int8Array, 1 / 127],
+  [Uint8Array, 1 / 255],
+  [Int16Array, 1 / 32767],
+  [Uint16Array, 1 / 65535],
+  [Int32Array, 1 / 2147483647],
+  [Uint32Array, 1 / 4294967295],
+])
+
 function bakeParts(scene: THREE.Object3D, fixed?: Frame) {
   return (() => {
     const buckets = new Map<string, THREE.BufferGeometry[]>()
@@ -334,10 +406,12 @@ function bakeParts(scene: THREE.Object3D, fixed?: Frame) {
       // Unmatched geometry joins the shell rather than being dropped.
       const id = partIdFor(mesh) ?? 'shell'
 
-      // Kept indexed: Draco delivers shared-vertex meshes, and flattening
-      // them to triangle soup (toNonIndexed) tripled the vertex work the GPU
-      // does every frame for zero visual difference.
-      const world = mesh.geometry.clone().applyMatrix4(mesh.matrixWorld)
+      // Kept indexed: the encoder delivers shared-vertex meshes, and
+      // flattening them to triangle soup (toNonIndexed) tripled the vertex
+      // work the GPU does every frame for zero visual difference.
+      const world = mesh.geometry.clone()
+      unpack(world)
+      world.applyMatrix4(mesh.matrixWorld)
       // Shaded rendering needs normals; CAD exports carry them, but compute
       // them per-face if a mesh arrives without.
       if (!world.getAttribute('normal')) world.computeVertexNormals()
@@ -474,13 +548,13 @@ function PartSet({
  * it does can un-render the machine that is already on screen.
  */
 function InnerRov({ frame, ...rest }: PartsProps & { frame: Frame }) {
-  const { scene } = useGLTF(INNER_URL, DRACO_PATH)
+  const { scene } = useGLTF(INNER_URL, false)
   const { geometries, normalise } = useMemo(() => bakeParts(scene, frame), [scene, frame])
   return <PartSet {...rest} geometries={geometries} normalise={normalise} />
 }
 
 function GlbRov(props: PartsProps) {
-  const { scene } = useGLTF(GLB_URL, DRACO_PATH)
+  const { scene } = useGLTF(GLB_URL, false)
   const { geometries, normalise, frame } = useMemo(() => bakeParts(scene), [scene])
 
   /*
@@ -492,7 +566,7 @@ function GlbRov(props: PartsProps) {
   const [openedUp, setOpenedUp] = useState(false)
 
   useEffect(() => {
-    const fetchInterior = () => useGLTF.preload(INNER_URL, DRACO_PATH)
+    const fetchInterior = () => useGLTF.preload(INNER_URL, false)
     // Safari has no requestIdleCallback; a short timer is close enough, since
     // all this decides is how long after first paint the fetch starts.
     if (typeof window.requestIdleCallback === 'function') {

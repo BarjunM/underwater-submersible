@@ -30,6 +30,7 @@
     "@types/react-dom": "^18.3.0",
     "@types/three": "^0.166.0",
     "gltf-pipeline": "^4.1.0",
+    "gltfpack": "^1.2.0",
     "obj2gltf": "^3.1.6",
     "typescript": "^5.5.3"
   },
