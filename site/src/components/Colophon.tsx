@@ -10,14 +10,6 @@ import styles from './Colophon.module.css'
  * restates the page is a second page. What is left is the one thing a reader
  * gets to the bottom wanting.
  */
-/** The closing strip. Facts about the build, not claims about it. */
-const META: [string, string][] = [
-  ['Working depth', '85 m'],
-  ['Tether', '100 m'],
-  ['Assembly', '14 parts'],
-  ['Source', 'Open on release'],
-]
-
 export function Colophon() {
   return (
     <footer className={styles.colophon} aria-label="Contact">
@@ -46,21 +38,6 @@ export function Colophon() {
         </div>
       </div>
 
-      {/*
-        A specification sheet ends with a strip of the facts that were true of
-        the whole document, and it is the one bit of chrome this page had
-        nothing of. Every figure here is the real machine's — the depth is
-        chamber-validated, the tether is the one on the third prototype — so
-        it reads as a colophon rather than as decoration.
-      */}
-      <ul className={styles.meta}>
-        {META.map(([term, value]) => (
-          <li key={term} className={styles.metaItem}>
-            <span className={styles.metaTerm}>{term}</span>
-            <span className={styles.metaValue}>{value}</span>
-          </li>
-        ))}
-      </ul>
 
       <PipeBand />
     </footer>
