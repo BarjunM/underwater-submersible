@@ -35,11 +35,29 @@ export type Insets = { left?: number; right?: number; top?: number; bottom?: num
  */
 const FILL = { closed: 1.42, open: 1.0 }
 
+/**
+ * Extra push when something has been switched off.
+ *
+ * Stripping the shell away shrinks the bounding box, and a fit that only ever
+ * matches the box holds the machine at the same apparent size — you ask to
+ * look inside and get the same picture with less in it. Asking to see the
+ * interior is asking to see it closer, so the frame closes in on what is
+ * left.
+ *
+ * Modest on purpose. Any fill above 1 spends slack the fit deliberately left,
+ * and there is only slack on whichever axis is not binding — push it far
+ * enough and the machine grows out past the insets and under the assembly
+ * index. 1.2 did exactly that once the housing was exposed and the model was
+ * at its longest.
+ */
+const REVEAL_FILL = 1.1
+
 function Frame({
   target,
   insets,
   scale,
   explode,
+  revealed,
   margin = 1.08,
 }: {
   target: MutableRefObject<THREE.Group | null>
@@ -49,6 +67,8 @@ function Frame({
   scale: MutableRefObject<number>
   /** 0 assembled, 1 fully apart — see FILL. */
   explode: MutableRefObject<number>
+  /** True once anything has been switched off — see REVEAL_FILL. */
+  revealed?: boolean
   margin?: number
 }) {
   const { camera, size } = useThree()
@@ -102,7 +122,9 @@ function Frame({
     // Eased, not linear, so the machine does not lurch outward the instant the
     // slider leaves zero.
     const open = THREE.MathUtils.clamp(explode.current, 0, 1)
-    const fill = THREE.MathUtils.lerp(FILL.closed, FILL.open, open * open * (3 - 2 * open))
+    const fill =
+      THREE.MathUtils.lerp(FILL.closed, FILL.open, open * open * (3 - 2 * open)) *
+      (revealed ? REVEAL_FILL : 1)
 
     const wanted = Math.min(availWidth / width, availHeight / height) * scale.current * fill
     camera.zoom = settled.current
@@ -258,7 +280,13 @@ export function RovCanvas({
         />
       </group>
       <Axis explode={explode} ink={theme === 'light' ? '#1b1712' : '#f2efe1'} />
-      <Frame target={model} insets={insets} scale={scale} explode={explode} />
+      <Frame
+        target={model}
+        insets={insets}
+        scale={scale}
+        explode={explode}
+        revealed={(hidden?.size ?? 0) > 0}
+      />
 
       <OrbitControls
         ref={controls}

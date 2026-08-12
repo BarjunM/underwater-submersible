@@ -458,6 +458,32 @@
   gap: 9px;
 }
 
+/*
+ * What the viewer is showing. Sits under the two actions in the same register
+ * as the instrument labels on the other side of the canvas, so it reads as a
+ * readout rather than as a caption on the buttons.
+ */
+.state {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  margin-top: 12px;
+  min-height: 1em;
+}
+
+.stateTerm {
+  font-size: 0.54rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--bone-34);
+}
+
+.stateValue {
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  color: var(--bone-72);
+}
+
 .control {
   position: relative;
   padding: 11px 22px;

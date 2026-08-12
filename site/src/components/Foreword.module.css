@@ -178,6 +178,49 @@
   margin-bottom: 0.55em;
 }
 
+/* --- journey --------------------------------------------------------------- */
+
+/* A tracked heading, not a sentence — it marks the run below as a list of
+   things that happened rather than more prose. */
+.label {
+  font-size: 0.58rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--accent-ink);
+  margin-top: 0.4em;
+}
+
+/*
+ * The build, numbered.
+ *
+ * Own counter rather than a browser marker: the marker sits outside the text
+ * block and cannot be set in the accent or tracked to match everything else on
+ * the page. Hanging indent so the numbers form a column and the wrapped lines
+ * align under the first word rather than under the digit.
+ */
+.steps {
+  list-style: none;
+  counter-reset: step;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85em;
+}
+
+.step {
+  counter-increment: step;
+  position: relative;
+  padding-left: 2.1em;
+}
+
+.step::before {
+  content: counter(step) '.';
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: var(--accent-ink);
+  font-variant-numeric: tabular-nums;
+}
+
 .dim {
   color: var(--bone-34);
   font-size: 0.92em;

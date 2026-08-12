@@ -22,7 +22,7 @@ export const site = {
  * `href` makes it a link, `fig` points it at a plate in lib/figures.ts, and a
  * term can carry both.
  */
-type ForewordPart = string | { t: string; href?: string; fig?: string }
+export type ForewordPart = string | { t: string; href?: string; fig?: string }
 /**
  * The cover letter, in a prototype-progression format. The milestones are the
  * team's real build history, in their own sequence.
@@ -31,34 +31,37 @@ type ForewordPart = string | { t: string; href?: string; fig?: string }
 export const body =
   'An inspection robot that reads dam walls and pipelines by camera — the feed rides the tether, and detection runs at the surface station. Every part below is the real CAD — take it apart, or switch the shell off and look inside.'
 
-export const foreword: { parts: ForewordPart[]; lead?: boolean; dim?: boolean }[] = [
-  { parts: ["Hi! We're OceanOptic."], lead: true },
+export const foreword: {
+  parts?: ForewordPart[]
+  /** A numbered run — the build, in the order it happened. */
+  steps?: ForewordPart[][]
+  lead?: boolean
+  dim?: boolean
+  /** A small tracked heading rather than a sentence. */
+  label?: boolean
+}[] = [
+  { parts: ["hi! we're OceanOptic."], lead: true },
   {
-    parts: [
-      "We've been building an underwater inspection robot for the past year — a team of three, since last summer.",
-    ],
+    parts: ['we’ve been building an underwater inspection submersible for the past year.'],
   },
+  { parts: ['Journey'], label: true },
   {
-    parts: [
-      'Our first prototype proved the frame — ',
-      { t: 'a hull designed in Fusion 360', href: '#machine', fig: 'hull' },
-      ', printed in PLA and reprinted in PETG after the first frames let water through.',
-    ],
-  },
-  {
-    parts: [
-      'Our second prototype sealed the core: ',
-      { t: 'acrylic pressure tubes', fig: 'housing' },
-      ' around ',
-      { t: 'the electronics, camera and LEDs', fig: 'chassis' },
-      ', closed with printed PETG endcaps and greased o-rings.',
-    ],
-  },
-  {
-    parts: [
-      'Our third prototype went deep — ',
-      { t: 'a 100 m tether', fig: 'tether' },
-      ', pressure-chamber validated at 8.5 bar for an 85-metre working depth.',
+    steps: [
+      [
+        'designed and prototyped ',
+        { t: 'a watertight frame in Fusion', href: '#machine', fig: 'hull' },
+        ', printed in PLA and reprinted in PETG after the PLA faced water leakage.',
+      ],
+      [
+        'experimented with ',
+        { t: 'acrylic pressure tubes', fig: 'housing' },
+        ' to create watertight seals for the electronics, camera and LEDs, enclosed with O-ring seals and an epoxy seal for the PETG endcaps.',
+      ],
+      [
+        'depth tested everywhere: from bathtubs and commercial pools at ~2 m down to ~85 m in freshwater lakes, all ',
+        { t: 'tethered via a 100 m line', fig: 'tether' },
+        ', with pressure-chamber validation up to 8.5 bar.',
+      ],
     ],
   },
   {
@@ -75,8 +78,8 @@ export const foreword: { parts: ForewordPart[]; lead?: boolean; dim?: boolean }[
   {
     parts: [
       'Our current iteration ',
-      { t: 'finds structural defects', href: '#mission', fig: 'field' },
-      " in dams and pipelines while they're still repairable — no divers, no dry-docking. Every part below is the real CAD, live in your browser.",
+      { t: 'finds structural defects', href: '#machine', fig: 'field' },
+      ' in subsea infrastructure (pipelines).',
     ],
   },
   {

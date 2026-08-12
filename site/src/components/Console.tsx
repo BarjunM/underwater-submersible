@@ -208,13 +208,19 @@ export function Console() {
    * bare electronics (tube off as well). One button cycles them; individual
    * part toggles still work on top.
    */
+  /*
+   * `state` is what you are looking at; `label` is what the button will do to
+   * it. Keeping both means the control can say where you are as well as where
+   * it goes — cycling three ways through one button with only a changing verb
+   * on it gave no way to tell the middle state from the last.
+   */
   const REVEALS = useMemo(
     () => [
-      { label: 'Look inside', hide: [] as string[] },
-      { label: 'Strip to core', hide: ['shell', 'foam'] },
+      { state: 'As built', label: 'Look inside', hide: [] as string[] },
+      { state: 'Housing exposed', label: 'Strip to core', hide: ['shell', 'foam'] },
       /* The vessel lives in the endcaps group (see lib/content.ts) — hiding
          it opens the housing while the chassis keeps carrying the camera. */
-      { label: 'Refit shell', hide: ['shell', 'foam', 'endcaps'] },
+      { state: 'Core exposed', label: 'Refit shell', hide: ['shell', 'foam', 'endcaps'] },
     ],
     [],
   )
@@ -408,6 +414,18 @@ export function Console() {
                 {REVEALS[reveal].label}
               </button>
             </div>
+
+            {/* What the viewer is showing right now, in the same register as
+                the instrument labels. Live, so a screen reader is told when
+                the view changes rather than only when a button is pressed. */}
+            <p className={styles.state} aria-live="polite">
+              <span className={styles.stateTerm}>View</span>
+              <span className={styles.stateValue}>
+                {REVEALS[reveal].state}
+                {open ? ' · disassembled' : ''}
+                {hidden.size > REVEALS[reveal].hide.length ? ' · parts hidden' : ''}
+              </span>
+            </p>
           </div>
         </footer>
 

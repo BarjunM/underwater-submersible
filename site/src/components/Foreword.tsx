@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useState } from 'react'
-import { foreword, site } from '@/lib/content'
+import { foreword, site, type ForewordPart } from '@/lib/content'
 import { figureById } from '@/lib/figures'
 import { applyTheme, useTheme } from '@/lib/theme'
 import { FigurePeek } from './FigurePeek'
@@ -28,6 +28,47 @@ export function Foreword() {
   const [peek, setPeek] = useState<{ id: string; x: number; y: number } | null>(null)
   const peekAt = useCallback((id: string, x: number, y: number) => setPeek({ id, x, y }), [])
   const clearPeek = useCallback(() => setPeek(null), [])
+
+  /**
+   * Turns a run of parts into text and marked terms.
+   *
+   * A marked term is a link, a figure reference, or both. The figure handlers
+   * go on either, and are pointer- and focus-driven so a keyboard reader gets
+   * the plate too.
+   */
+  const marked = useCallback(
+    (parts: ForewordPart[] | undefined) =>
+      (parts ?? []).map((part, j) => {
+        if (typeof part === 'string') return part
+
+        const figure = part.fig ? (figureById.get(part.fig) ?? null) : null
+        const bind = figure
+          ? {
+              onPointerEnter: (event: React.PointerEvent) =>
+                peekAt(figure.id, event.clientX, event.clientY),
+              onPointerLeave: clearPeek,
+              onFocus: (event: React.FocusEvent<HTMLElement>) => {
+                const rect = event.currentTarget.getBoundingClientRect()
+                peekAt(figure.id, rect.right, rect.top + rect.height / 2)
+              },
+              onBlur: clearPeek,
+            }
+          : {}
+
+        const className = `${part.href ? styles.link : ''} ${figure ? styles.figRef : ''}`.trim()
+
+        return part.href ? (
+          <a key={j} href={part.href} className={className} {...bind}>
+            {part.t}
+          </a>
+        ) : (
+          <span key={j} className={className} tabIndex={0} {...bind}>
+            {part.t}
+          </span>
+        )
+      }),
+    [peekAt, clearPeek],
+  )
 
   return (
     <section className={styles.foreword} data-intro>
@@ -60,47 +101,38 @@ export function Foreword() {
 
         <div className={styles.body}>
           <div className={styles.letter}>
-            {foreword.map((paragraph, i) => (
-              <p
-                key={i}
-                className={`${paragraph.lead ? styles.lead : ''} ${paragraph.dim ? styles.dim : ''}`}
-              >
-                {paragraph.parts.map((part, j) => {
-                  if (typeof part === 'string') return part
+            {foreword.map((run, i) => {
+              /*
+               * A run is a paragraph, a heading, or the numbered journey. All
+               * three are built from the same marked-up parts, so `marked`
+               * does that work once and only the element around it changes.
+               */
+              if (run.label) {
+                return (
+                  <p key={i} className={styles.label}>
+                    {run.parts?.map((part) => (typeof part === 'string' ? part : part.t))}
+                  </p>
+                )
+              }
 
-                  // A marked term is a link, a figure reference, or both. The
-                  // figure handlers go on either, and are pointer- and
-                  // focus-driven so a keyboard reader gets the plate too.
-                  const figure = part.fig ? figureById.get(part.fig) ?? null : null
-                  const bind = figure
-                    ? {
-                        onPointerEnter: (event: React.PointerEvent) =>
-                          peekAt(figure.id, event.clientX, event.clientY),
-                        onPointerLeave: clearPeek,
-                        onFocus: (event: React.FocusEvent<HTMLElement>) => {
-                          const rect = event.currentTarget.getBoundingClientRect()
-                          peekAt(figure.id, rect.right, rect.top + rect.height / 2)
-                        },
-                        onBlur: clearPeek,
-                      }
-                    : {}
+              if (run.steps) {
+                return (
+                  <ol key={i} className={styles.steps}>
+                    {run.steps.map((step, j) => (
+                      <li key={j} className={styles.step}>
+                        {marked(step)}
+                      </li>
+                    ))}
+                  </ol>
+                )
+              }
 
-                  const className = `${part.href ? styles.link : ''} ${
-                    figure ? styles.figRef : ''
-                  }`.trim()
-
-                  return part.href ? (
-                    <a key={j} href={part.href} className={className} {...bind}>
-                      {part.t}
-                    </a>
-                  ) : (
-                    <span key={j} className={className} tabIndex={0} {...bind}>
-                      {part.t}
-                    </span>
-                  )
-                })}
-              </p>
-            ))}
+              return (
+                <p key={i} className={`${run.lead ? styles.lead : ''} ${run.dim ? styles.dim : ''}`}>
+                  {marked(run.parts)}
+                </p>
+              )
+            })}
           </div>
 
           <div className={styles.plateColumn}>
