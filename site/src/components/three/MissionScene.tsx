@@ -57,6 +57,80 @@ const TRACE = { dark: '#f2efe1', light: '#f7f3e8' }
  * print, and its inverse on the negative, it reads instantly at any size, and
  * it costs one draw call with no shading maths behind it.
  */
+/**
+ * Surface for the pipe, drawn rather than fetched.
+ *
+ * A flat fill reads as a bar; real pipe reads as pipe because it is not one
+ * even value. This is a small canvas of multiplicative greys — mostly white,
+ * which changes nothing, with darker weld seams at intervals and a wash of
+ * mottling and lengthwise streaking over the top. Because it multiplies the
+ * material colour it works unchanged on both themes: it darkens the black
+ * pipe on the print and the grey one on the negative by the same proportion.
+ *
+ * Procedural on purpose. An image would be another request, another asset to
+ * ship and another thing to keep in step with the palette; this is a few
+ * hundred bytes of code and one 256×64 texture built once.
+ */
+function usePipeTexture() {
+  return useMemo(() => {
+    // The canvas element does not exist during prerender. Nothing draws then
+    // either, so a null map is the right answer rather than a guard everywhere.
+    if (typeof document === 'undefined') return null
+
+    const w = 256
+    const h = 64
+    const canvas = document.createElement('canvas')
+    canvas.width = w
+    canvas.height = h
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return null
+
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(0, 0, w, h)
+
+    // Deterministic, so the pipe is the same pipe on every load.
+    let seed = 20260811
+    const rnd = () => {
+      seed = (seed * 1664525 + 1013904223) % 4294967296
+      return seed / 4294967296
+    }
+
+    // Lengthwise streaking — the grain of a rolled and welded tube.
+    for (let i = 0; i < 150; i++) {
+      const y = Math.floor(rnd() * h)
+      const len = 20 + rnd() * 180
+      ctx.fillStyle = `rgba(0,0,0,${0.10 + rnd() * 0.16})`
+      ctx.fillRect(rnd() * w, y, len, 1)
+    }
+
+    // Mottling, so it is not just stripes.
+    for (let i = 0; i < 700; i++) {
+      ctx.fillStyle = `rgba(0,0,0,${0.05 + rnd() * 0.14})`
+      ctx.fillRect(rnd() * w, rnd() * h, 1 + rnd() * 2, 1 + rnd() * 2)
+    }
+
+    // Girth welds. Two soft bands rather than a hard line — a seam on a wet
+    // pipe is a change in the surface, not a drawn rule.
+    for (const cx of [w * 0.5]) {
+      const band = ctx.createLinearGradient(cx - 6, 0, cx + 6, 0)
+      band.addColorStop(0, 'rgba(0,0,0,0)')
+      band.addColorStop(0.5, 'rgba(0,0,0,0.42)')
+      band.addColorStop(1, 'rgba(0,0,0,0)')
+      ctx.fillStyle = band
+      ctx.fillRect(cx - 6, 0, 12, h)
+    }
+
+    const texture = new THREE.CanvasTexture(canvas)
+    texture.wrapS = THREE.RepeatWrapping
+    texture.wrapT = THREE.RepeatWrapping
+    // Along the pipe only. Repeating around the circumference would tile the
+    // seam into a ring of seams.
+    texture.repeat.set(7, 1)
+    texture.anisotropy = 4
+    return texture
+  }, [])
+}
+
 function Pipe({ light }: { light: boolean }) {
   const geometry = useMemo(() => {
     const g = new THREE.CylinderGeometry(PIPE.radius, PIPE.radius, PIPE.draw, 64, 1, true)
@@ -64,20 +138,23 @@ function Pipe({ light }: { light: boolean }) {
     return g
   }, [])
 
+  const texture = usePipeTexture()
 
   useEffect(() => () => geometry.dispose(), [geometry])
+  useEffect(() => () => texture?.dispose(), [texture])
 
   const body = light ? COLOUR.pipe.light : COLOUR.pipe.dark
 
   return (
     <group>
-      {/* fog={false} with the rest: haze is a depth cue, and there is no depth
-          being described here — it would only wash the ends of a flat shape. */}
-      {/* Front faces only. The cylinder is open-ended, so drawing its back
+      {/* fog={false}: haze is a depth cue, and there is no depth being
+          described here — it would only wash the ends of a flat shape.
+
+          Front faces only. The cylinder is open-ended, so drawing its back
           wall meant looking straight through the pipe at its own far side.
           Nothing here is ever seen from inside. */}
       <mesh geometry={geometry}>
-        <meshBasicMaterial color={body} side={THREE.FrontSide} fog={false} />
+        <meshBasicMaterial color={body} map={texture} side={THREE.FrontSide} fog={false} />
       </mesh>
     </group>
   )

@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { THEME_BOOT } from '@/lib/theme'
-import { Azeret_Mono, Instrument_Serif } from 'next/font/google'
+import { Instrument_Serif, JetBrains_Mono } from 'next/font/google'
 import { body as description, site } from '@/lib/content'
 import './globals.css'
 
@@ -27,7 +27,16 @@ const display = Instrument_Serif({
   display: 'swap',
 })
 
-const mono = Azeret_Mono({
+/*
+ * JetBrains Mono rather than the Azeret that was here.
+ *
+ * Azeret is drawn narrow and geometric — closer to a display mono than a
+ * reading one, and at the sizes this page sets it the labels started to feel
+ * cramped. This is wider, with more open counters, a single-storey g and a
+ * slashed zero: an engineering face rather than a styled one, which is what
+ * the page is pretending to be.
+ */
+const mono = JetBrains_Mono({
   subsets: ['latin'],
   weight: ['400', '500'],
   variable: '--font-mono',

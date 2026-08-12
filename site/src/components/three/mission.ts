@@ -163,7 +163,14 @@ export const COLOUR = {
    * an arc. The cracks followed, with the patrol replacing the repair story.
    * What is left is one clean form for the machine to work along.
    */
-  pipe: { light: '#0d0b09', dark: '#2f302b' },
+  /*
+   * Lifted off pure black on the print so the surface texture has somewhere
+   * to go. The map multiplies, so it can only ever darken what it is given —
+   * against #0d0b09 there was nothing left to take away and the pipe stayed a
+   * flat bar. At this value it still reads as black against cream, and the
+   * seams and streaking actually show.
+   */
+  pipe: { light: '#1c1a15', dark: '#33342e' },
   /* Mirrors MATERIAL.hull in lib/content.ts — the mission ROV takes its real
      materials from there; this is only so the palette reads in one place. */
   hull: '#f6f5f2',
